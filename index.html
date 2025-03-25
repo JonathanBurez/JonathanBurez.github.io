@@ -175,8 +175,8 @@
 <body>
     <div id="container">
         <div id="header">
-            <h1>Switzerland Cycling Adventure</h1>
-            <p>Follow my 11-day journey through the beautiful Swiss landscapes</p>
+            <h1>Jo rides the Hope1000</h1>
+            <p>Follow his 11-day journey through the beautiful Swiss landscapes</p>
             <div id="stage-selector">
                 <!-- Stage buttons will be added here dynamically -->
             </div>
@@ -607,8 +607,8 @@
             
             // This is just an example - you would need to replace with your actual GPX URLs
             const gpxUrls = [
-                `https://www.icloud.com/iclouddrive/077njX8ce55CyX6d19fz7xsAg#Hope1000_-_day_1_website.gpx`,
-                `https://example.com/gpx/stage2.gpx`,
+                'https://www.icloud.com/iclouddrive/077njX8ce55CyX6d19fz7xsAg#Hope1000_-_day_1_website.gpx',
+                'https://www.icloud.com/iclouddrive/00awMvdOIeJrmrjmRGa-vpKxw#Hope1000_-_day_2_website.gpx',
                 // Add more GPX URLs for each stage
             ];
             
@@ -616,8 +616,8 @@
             createStageButtons();
             
             // Load first two stages from example
-            parseGPX('https://example.com/gpx/stage1.gpx', 0);
-            parseGPX('https://example.com/gpx/stage2.gpx', 1);
+            parseGPX('https://www.icloud.com/iclouddrive/077njX8ce55CyX6d19fz7xsAg#Hope1000_-_day_1_website.gpx', 0);
+            parseGPX('https://www.icloud.com/iclouddrive/00awMvdOIeJrmrjmRGa-vpKxw#Hope1000_-_day_2_website.gpx', 1);
             
             // Activate the first stage button
             const firstStageButton = document.querySelector('.stage-button[data-stage="0"]');
