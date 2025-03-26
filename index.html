@@ -150,163 +150,163 @@
         // Add fullscreen control
         map.addControl(new maplibregl.FullscreenControl());
 
-        // State to manage routes and stages
-        const routes = {
-            stages: [],
-            currentStage: 0
-        };
+        // // State to manage routes and stages
+        // const routes = {
+        //     stages: [],
+        //     currentStage: 0
+        // };
 
-        // Stage colors
-        const stageColors = [
-            '#e41a1c', // red
-            '#377eb8', // blue
-            '#4daf4a', // green
-            '#984ea3', // purple
-            '#ff7f00', // orange
-            '#ffff33', // yellow
-            '#a65628', // brown
-            '#f781bf', // pink
-            '#999999', // gray
-            '#8dd3c7', // teal
-            '#fb8072'  // salmon
-        ];
+        // // Stage colors
+        // const stageColors = [
+        //     '#e41a1c', // red
+        //     '#377eb8', // blue
+        //     '#4daf4a', // green
+        //     '#984ea3', // purple
+        //     '#ff7f00', // orange
+        //     '#ffff33', // yellow
+        //     '#a65628', // brown
+        //     '#f781bf', // pink
+        //     '#999999', // gray
+        //     '#8dd3c7', // teal
+        //     '#fb8072'  // salmon
+        // ];
 
-        // Function to parse GPX files
-        async function parseGPX(url, stageIndex) {
-            try {
-                const response = await fetch(url);
-                const gpxText = await response.text();
+        // // Function to parse GPX files
+        // async function parseGPX(url, stageIndex) {
+        //     try {
+        //         const response = await fetch(url);
+        //         const gpxText = await response.text();
                 
-                // Parse GPX using DOM parser
-                const parser = new DOMParser();
-                const gpx = parser.parseFromString(gpxText, "text/xml");
+        //         // Parse GPX using DOM parser
+        //         const parser = new DOMParser();
+        //         const gpx = parser.parseFromString(gpxText, "text/xml");
                 
-                // Extract track points
-                const trackPoints = [];
-                const points = gpx.getElementsByTagName('trkpt');
+        //         // Extract track points
+        //         const trackPoints = [];
+        //         const points = gpx.getElementsByTagName('trkpt');
                 
-                for (let i = 0; i < points.length; i++) {
-                    const point = points[i];
-                    const lat = parseFloat(point.getAttribute('lat'));
-                    const lon = parseFloat(point.getAttribute('lon'));
+        //         for (let i = 0; i < points.length; i++) {
+        //             const point = points[i];
+        //             const lat = parseFloat(point.getAttribute('lat'));
+        //             const lon = parseFloat(point.getAttribute('lon'));
                     
-                    // Get elevation if available
-                    let ele = 0;
-                    const eleNode = point.getElementsByTagName('ele')[0];
-                    if (eleNode) {
-                        ele = parseFloat(eleNode.textContent);
-                    }
+        //             // Get elevation if available
+        //             let ele = 0;
+        //             const eleNode = point.getElementsByTagName('ele')[0];
+        //             if (eleNode) {
+        //                 ele = parseFloat(eleNode.textContent);
+        //             }
                     
-                    trackPoints.push([lon, lat, ele]);
-                }
+        //             trackPoints.push([lon, lat, ele]);
+        //         }
                 
-                // Create GeoJSON LineString
-                const routeGeoJSON = {
-                    type: 'Feature',
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: trackPoints.map(p => [p[0], p[1]])
-                    }
-                };
+        //         // Create GeoJSON LineString
+        //         const routeGeoJSON = {
+        //             type: 'Feature',
+        //             geometry: {
+        //                 type: 'LineString',
+        //                 coordinates: trackPoints.map(p => [p[0], p[1]])
+        //             }
+        //         };
                 
-                // Add route to map
-                map.addSource(`route-stage-${stageIndex}`, {
-                    type: 'geojson',
-                    data: routeGeoJSON
-                });
+        //         // Add route to map
+        //         map.addSource(`route-stage-${stageIndex}`, {
+        //             type: 'geojson',
+        //             data: routeGeoJSON
+        //         });
                 
-                map.addLayer({
-                    id: `route-stage-${stageIndex}`,
-                    type: 'line',
-                    source: `route-stage-${stageIndex}`,
-                    paint: {
-                        'line-color': stageColors[stageIndex],
-                        'line-width': 5,
-                        'line-opacity': 0.7
-                    }
-                });
+        //         map.addLayer({
+        //             id: `route-stage-${stageIndex}`,
+        //             type: 'line',
+        //             source: `route-stage-${stageIndex}`,
+        //             paint: {
+        //                 'line-color': stageColors[stageIndex],
+        //                 'line-width': 5,
+        //                 'line-opacity': 0.7
+        //             }
+        //         });
                 
-                // Calculate route metrics
-                const distance = turf.length(routeGeoJSON, {units: 'kilometers'});
-                const bbox = turf.bbox(routeGeoJSON);
+        //         // Calculate route metrics
+        //         const distance = turf.length(routeGeoJSON, {units: 'kilometers'});
+        //         const bbox = turf.bbox(routeGeoJSON);
                 
-                // Store route information
-                routes.stages[stageIndex] = {
-                    route: routeGeoJSON,
-                    distance: distance,
-                    bbox: bbox
-                };
+        //         // Store route information
+        //         routes.stages[stageIndex] = {
+        //             route: routeGeoJSON,
+        //             distance: distance,
+        //             bbox: bbox
+        //         };
                 
-                return routes.stages[stageIndex];
-            } catch (error) {
-                console.error(`Error loading GPX for stage ${stageIndex + 1}:`, error);
-                return null;
-            }
-        }
+        //         return routes.stages[stageIndex];
+        //     } catch (error) {
+        //         console.error(`Error loading GPX for stage ${stageIndex + 1}:`, error);
+        //         return null;
+        //     }
+        // }
 
-        // Function to create stage buttons
-        function createStageButtons() {
-            const stageSelector = document.querySelector('#stage-selector');
+        // // Function to create stage buttons
+        // function createStageButtons() {
+        //     const stageSelector = document.querySelector('#stage-selector');
             
-            for (let i = 0; i < 11; i++) {
-                const button = document.createElement('button');
-                button.className = 'stage-button';
-                button.textContent = `Stage ${i + 1}`;
-                button.setAttribute('data-stage', i);
+        //     for (let i = 0; i < 11; i++) {
+        //         const button = document.createElement('button');
+        //         button.className = 'stage-button';
+        //         button.textContent = `Stage ${i + 1}`;
+        //         button.setAttribute('data-stage', i);
                 
-                button.addEventListener('click', () => focusOnStage(i));
+        //         button.addEventListener('click', () => focusOnStage(i));
                 
-                stageSelector.appendChild(button);
-            }
-        }
+        //         stageSelector.appendChild(button);
+        //     }
+        // }
 
-        // Focus on a specific stage
-        function focusOnStage(stageIndex) {
-            if (routes.stages[stageIndex]) {
-                const stage = routes.stages[stageIndex];
+        // // Focus on a specific stage
+        // function focusOnStage(stageIndex) {
+        //     if (routes.stages[stageIndex]) {
+        //         const stage = routes.stages[stageIndex];
                 
-                // Fit map to stage bounds with padding
-                map.fitBounds(stage.bbox, {
-                    padding: 50,
-                    duration: 1000
-                });
+        //         // Fit map to stage bounds with padding
+        //         map.fitBounds(stage.bbox, {
+        //             padding: 50,
+        //             duration: 1000
+        //         });
                 
-                // Update route info
-                document.getElementById('stage-details').innerHTML = `
-                    Stage ${stageIndex + 1}<br>
-                    Distance: ${stage.distance.toFixed(1)} km
-                `;
+        //         // Update route info
+        //         document.getElementById('stage-details').innerHTML = `
+        //             Stage ${stageIndex + 1}<br>
+        //             Distance: ${stage.distance.toFixed(1)} km
+        //         `;
                 
-                // Highlight selected stage button
-                document.querySelectorAll('.stage-button').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                document.querySelector(`.stage-button[data-stage="${stageIndex}"]`).classList.add('active');
-            }
-        }
+        //         // Highlight selected stage button
+        //         document.querySelectorAll('.stage-button').forEach(btn => {
+        //             btn.classList.remove('active');
+        //         });
+        //         document.querySelector(`.stage-button[data-stage="${stageIndex}"]`).classList.add('active');
+        //     }
+        // }
 
         // Initialize the application
         async function initApp() {
-            // Create stage buttons
-            createStageButtons();
+        //     // Create stage buttons
+        //     createStageButtons();
             
-            // Load GPX files (replace with your actual URLs)
-            const gpxUrls = [
-                'https://www.icloud.com/iclouddrive/077njX8ce55CyX6d19fz7xsAg#Hope1000_-_day_1_website.gpx',
-                'https://www.icloud.com/iclouddrive/00awMvdOIeJrmrjmRGa-vpKxw#Hope1000_-_day_2_website.gpx',
-                // Add URLs for all 11 stages
-            ];
+        //     // Load GPX files (replace with your actual URLs)
+        //     const gpxUrls = [
+        //         'https://www.icloud.com/iclouddrive/077njX8ce55CyX6d19fz7xsAg#Hope1000_-_day_1_website.gpx',
+        //         'https://www.icloud.com/iclouddrive/00awMvdOIeJrmrjmRGa-vpKxw#Hope1000_-_day_2_website.gpx',
+        //         // Add URLs for all 11 stages
+        //     ];
             
-            // Load first few stages
-            await Promise.all(
-                gpxUrls.slice(0, 2).map((url, index) => parseGPX(url, index))
-            );
+        //     // Load first few stages
+        //     await Promise.all(
+        //         gpxUrls.slice(0, 2).map((url, index) => parseGPX(url, index))
+        //     );
             
-            // Focus on first stage initially
-            if (routes.stages[0]) {
-                focusOnStage(0);
-            }
-        }
+        //     // Focus on first stage initially
+        //     if (routes.stages[0]) {
+        //         focusOnStage(0);
+        //     }
+        // }
 
         // Wait for map to load before initializing
         map.on('load', initApp);
