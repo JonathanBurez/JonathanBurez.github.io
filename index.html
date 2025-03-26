@@ -1,42 +1,712 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Display map navigation controls</title>
-    <meta property="og:description" content="Add zoom and rotation controls to the map." />
-    <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.css' />
-    <script src='https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.js'></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Switzerland Cycling Adventure Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     <style>
-        body { margin: 0; padding: 0; }
-        html, body, #map { height: 100%; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #header {
+            background-color: #e63946;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #map {
+            flex: 1;
+            min-height: 70vh;
+        }
+        #info-panel {
+            padding: 20px;
+            background-color: #f1faee;
+        }
+        #trip-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e63946;
+        }
+        .stat-label {
+            color: #457b9d;
+        }
+        #photo-gallery {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 10px 0;
+        }
+        .photo-thumbnail {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .photo-thumbnail:hover {
+            transform: scale(1.05);
+        }
+        #photo-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        #modal-content {
+            max-width: 80%;
+            max-height: 80%;
+        }
+        #modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+        }
+        #modal-caption {
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+        #close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+        }
+        .custom-popup .leaflet-popup-content-wrapper {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+        }
+        .popup-image {
+            width: 200px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .popup-time {
+            font-size: 12px;
+            color: #666;
+        }
+        #last-update {
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+        }
+        #stage-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+            justify-content: center;
+        }
+        .stage-button {
+            background-color: #457b9d;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .stage-button:hover {
+            background-color: #1d3557;
+        }
+        .stage-button.active {
+            background-color: #e63946;
+            transform: scale(1.05);
+        }
+        .legend {
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            line-height: 1.8;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 5px;
+            margin-right: 8px;
+        }
+        .cyclist-icon {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body>
-  <div id="container">
-    <div id="header">
-        <h1>Switzerland Cycling Adventure</h1>
-        <p>Follow my 11-day journey through the beautiful Swiss landscapes</p>
+    <div id="container">
+        <div id="header">
+            <h1>Jo rides the Hope1000</h1>
+            <p>Follow his 11-day journey through the beautiful Swiss landscapes</p>
+            <div id="stage-selector">
+                <!-- Stage buttons will be added here dynamically -->
+            </div>
+        </div>
+        <div id="map"></div>
+        <div id="info-panel">
+            <div id="trip-stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="current-stage">0/11</div>
+                    <div class="stat-label">Current Stage</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="distance-traveled">0</div>
+                    <div class="stat-label">Kilometers</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="elevation-gain">0</div>
+                    <div class="stat-label">Meters Climbed</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="photos-shared">0</div>
+                    <div class="stat-label">Photos Shared</div>
+                </div>
+            </div>
+            <h2>Latest Photos</h2>
+            <div id="photo-gallery">
+                <!-- Photos will be added here dynamically -->
+            </div>
+            <div id="last-update">Last updated: Not yet started</div>
+        </div>
     </div>
-  </div>
-<div id="map"></div>
-<script>
-    const map = new maplibregl.Map({
-        container: 'map', // container id
-        style:
-            'https://api.maptiler.com/maps/streets/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
-        center: [8, 46], // starting position
-        zoom: 9, // starting zoom
-        rollEnabled: true // Enable mouse control of camera roll angle with `Ctrl` + right-click and drag
-    });
 
-    // Add zoom and rotation controls to the map.
-    map.addControl(new maplibregl.NavigationControl({
-        visualizePitch: true,
-        visualizeRoll: true,
-        showZoom: true,
-        showCompass: true
-    }));
-</script>
+    <div id="photo-modal">
+        <span id="close-modal">&times;</span>
+        <div id="modal-content">
+            <img id="modal-image" src="" alt="Photo">
+            <div id="modal-caption"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        // Initialize the map centered on Switzerland
+        const map = L.map('map').setView([46.8182, 8.2275], 8);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Variables to store trip data
+        let currentPosition = null;
+        let positionMarker = null;
+        let actualPath = [];
+        let pathLine = null;
+        let photos = [];
+        
+        // Stage colors (11 distinct colors)
+        const stageColors = [
+            '#e41a1c', // red
+            '#377eb8', // blue
+            '#4daf4a', // green
+            '#984ea3', // purple
+            '#ff7f00', // orange
+            '#ffff33', // yellow
+            '#a65628', // brown
+            '#f781bf', // pink
+            '#999999', // gray
+            '#8dd3c7', // teal
+            '#fb8072'  // salmon
+        ];
+        
+        // Store all route data
+        const routes = {
+            stages: [],
+            current: 0
+        };
+        
+        // Create a legend
+        const legend = L.control({position: 'bottomright'});
+        legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = '<h4>Legend</h4>';
+            
+            // Add stage colors
+            for (let i = 0; i < 11; i++) {
+                div.innerHTML += `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: ${stageColors[i]};"></div>
+                        <span>Stage ${i+1}</span>
+                    </div>
+                `;
+            }
+            
+            // Add current position
+            div.innerHTML += `
+                <div class="legend-item">
+                    <span style="margin-right: 8px;">🚴‍♂️</span>
+                    <span>Current Position</span>
+                </div>
+            `;
+            
+            // Add photos
+            div.innerHTML += `
+                <div class="legend-item">
+                    <span style="margin-right: 8px;">📷</span>
+                    <span>Photo</span>
+                </div>
+            `;
+            
+            return div;
+        };
+        legend.addTo(map);
+        
+        // Create a marker for current position (initially hidden)
+        const cyclistIcon = L.divIcon({
+            html: '🚴‍♂️',
+            className: 'cyclist-icon',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+        });
+        
+        positionMarker = L.marker([0, 0], {
+            icon: cyclistIcon,
+            zIndexOffset: 1000
+        });
+        
+        // Initialize the actual traveled path
+        pathLine = L.polyline([], {
+            color: '#e63946',
+            weight: 5,
+            opacity: 0.8
+        }).addTo(map);
+        
+        // Function to parse GPX files
+        async function parseGPX(url, stageIndex) {
+            try {
+                const response = await fetch(url);
+                const gpxText = await response.text();
+                
+                // Parse GPX using DOM parser
+                const parser = new DOMParser();
+                const gpx = parser.parseFromString(gpxText, "text/xml");
+                
+                // Extract track points
+                const trackPoints = [];
+                const points = gpx.getElementsByTagName('trkpt');
+                
+                for (let i = 0; i < points.length; i++) {
+                    const point = points[i];
+                    const lat = parseFloat(point.getAttribute('lat'));
+                    const lon = parseFloat(point.getAttribute('lon'));
+                    
+                    // Get elevation if available
+                    let ele = 0;
+                    const eleNode = point.getElementsByTagName('ele')[0];
+                    if (eleNode) {
+                        ele = parseFloat(eleNode.textContent);
+                    }
+                    
+                    trackPoints.push([lat, lon, ele]);
+                }
+                
+                // Create route object
+                const route = {
+                    index: stageIndex,
+                    points: trackPoints,
+                    distance: calculateRouteDistance(trackPoints),
+                    elevation: calculateElevationGain(trackPoints),
+                    line: L.polyline(trackPoints.map(p => [p[0], p[1]]), {
+                        color: stageColors[stageIndex],
+                        weight: 5,
+                        opacity: 0.7
+                    })
+                };
+                
+                // Add to routes collection
+                routes.stages[stageIndex] = route;
+                
+                // Add to map and fit bounds
+                route.line.addTo(map);
+                
+                // Add start and end markers
+                if (trackPoints.length > 0) {
+                    const startPoint = trackPoints[0];
+                    const endPoint = trackPoints[trackPoints.length - 1];
+                    
+                    L.marker([startPoint[0], startPoint[1]], {
+                        title: `Stage ${stageIndex + 1} Start`
+                    }).addTo(map)
+                    .bindPopup(`<strong>Stage ${stageIndex + 1} Start</strong>`);
+                    
+                    L.marker([endPoint[0], endPoint[1]], {
+                        title: `Stage ${stageIndex + 1} End`
+                    }).addTo(map)
+                    .bindPopup(`<strong>Stage ${stageIndex + 1} End</strong>`);
+                }
+                
+                return route;
+            } catch (error) {
+                console.error(`Error loading GPX for stage ${stageIndex + 1}:`, error);
+                return null;
+            }
+        }
+        
+        // Calculate distance of a route
+        function calculateRouteDistance(points) {
+            let distance = 0;
+            for (let i = 1; i < points.length; i++) {
+                const prevPoint = L.latLng(points[i-1][0], points[i-1][1]);
+                const currPoint = L.latLng(points[i][0], points[i][1]);
+                distance += prevPoint.distanceTo(currPoint);
+            }
+            return distance / 1000; // Convert to kilometers
+        }
+        
+        // Calculate elevation gain
+        function calculateElevationGain(points) {
+            let gain = 0;
+            for (let i = 1; i < points.length; i++) {
+                const elevDiff = points[i][2] - points[i-1][2];
+                if (elevDiff > 0) {
+                    gain += elevDiff;
+                }
+            }
+            return gain;
+        }
+        
+        // Create stage buttons
+        function createStageButtons() {
+            const stageSelector = document.getElementById('stage-selector');
+            stageSelector.innerHTML = '';
+            
+            for (let i = 0; i < 11; i++) {
+                const button = document.createElement('button');
+                button.className = 'stage-button';
+                button.textContent = `Stage ${i + 1}`;
+                button.setAttribute('data-stage', i);
+                
+                button.addEventListener('click', function() {
+                    const stage = parseInt(this.getAttribute('data-stage'));
+                    focusOnStage(stage);
+                    
+                    // Update active button
+                    document.querySelectorAll('.stage-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+                
+                stageSelector.appendChild(button);
+            }
+        }
+        
+        // Focus on a specific stage
+        function focusOnStage(stageIndex) {
+            if (routes.stages[stageIndex]) {
+                const route = routes.stages[stageIndex];
+                map.fitBounds(route.line.getBounds());
+                
+                // Update current stage display
+                document.getElementById('current-stage').textContent = `${stageIndex + 1}/11`;
+                
+                // Update elevation display
+                document.getElementById('elevation-gain').textContent = 
+                    route.elevation.toFixed(0);
+                
+                // Update distance display
+                document.getElementById('distance-traveled').textContent = 
+                    route.distance.toFixed(1);
+            }
+        }
+        
+        // Function to update position from Spot Gen4
+        function updatePosition(lat, lon, timestamp) {
+            if (!currentPosition) {
+                positionMarker.setLatLng([lat, lon]).addTo(map);
+            } else {
+                positionMarker.setLatLng([lat, lon]);
+            }
+            
+            currentPosition = [lat, lon];
+            actualPath.push(currentPosition);
+            
+            // Update actual path line
+            if (!pathLine) {
+                pathLine = L.polyline(actualPath, {
+                    color: '#e63946',
+                    weight: 5,
+                    opacity: 0.8
+                }).addTo(map);
+            } else {
+                pathLine.setLatLngs(actualPath);
+            }
+            
+            // Update last update time
+            const updateTime = new Date(timestamp);
+            document.getElementById('last-update').textContent = 
+                'Last updated: ' + updateTime.toLocaleString();
+            
+            // Determine current stage based on position
+            determineCurrentStage(lat, lon);
+        }
+        
+        // Determine which stage the cyclist is currently on
+        function determineCurrentStage(lat, lon) {
+            const position = L.latLng(lat, lon);
+            let closestStage = 0;
+            let closestDistance = Infinity;
+            
+            for (let i = 0; i < routes.stages.length; i++) {
+                if (routes.stages[i]) {
+                    const stage = routes.stages[i];
+                    const routePoints = stage.points.map(p => L.latLng(p[0], p[1]));
+                    
+                    // Find closest point on this route
+                    let minDistance = Infinity;
+                    for (const point of routePoints) {
+                        const distance = position.distanceTo(point);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                        }
+                    }
+                    
+                    if (minDistance < closestDistance) {
+                        closestDistance = minDistance;
+                        closestStage = i;
+                    }
+                }
+            }
+            
+            // Update current stage if it changed
+            if (routes.current !== closestStage) {
+                routes.current = closestStage;
+                
+                // Update stage buttons
+                document.querySelectorAll('.stage-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                const activeButton = document.querySelector(`.stage-button[data-stage="${closestStage}"]`);
+                if (activeButton) {
+                    activeButton.classList.add('active');
+                }
+                
+                // Update stats display
+                document.getElementById('current-stage').textContent = `${closestStage + 1}/11`;
+                
+                if (routes.stages[closestStage]) {
+                    document.getElementById('elevation-gain').textContent = 
+                        routes.stages[closestStage].elevation.toFixed(0);
+                    document.getElementById('distance-traveled').textContent = 
+                        routes.stages[closestStage].distance.toFixed(1);
+                }
+            }
+        }
+        
+        // Function to add a photo
+        function addPhoto(lat, lon, imageUrl, caption, timestamp) {
+            // Create a photo object
+            const photo = {
+                position: [lat, lon],
+                imageUrl: imageUrl,
+                caption: caption,
+                timestamp: timestamp
+            };
+            
+            photos.push(photo);
+            
+            // Add photo marker to map
+            const photoMarker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                    html: '📷',
+                    className: 'photo-icon',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                })
+            }).addTo(map);
+            
+            // Create popup with photo
+            const popupContent = `
+                <div class="photo-popup">
+                    <img src="${imageUrl}" class="popup-image" alt="Photo">
+                    <div>${caption}</div>
+                    <div class="popup-time">${new Date(timestamp).toLocaleString()}</div>
+                </div>
+            `;
+            
+            photoMarker.bindPopup(popupContent, {
+                className: 'custom-popup',
+                maxWidth: 250
+            });
+            
+            // Add to gallery
+            const gallery = document.getElementById('photo-gallery');
+            const thumbnail = document.createElement('img');
+            thumbnail.src = imageUrl;
+            thumbnail.className = 'photo-thumbnail';
+            thumbnail.setAttribute('data-index', photos.length - 1);
+            thumbnail.addEventListener('click', function() {
+                openPhotoModal(parseInt(this.getAttribute('data-index')));
+            });
+            
+            gallery.appendChild(thumbnail);
+            
+            // Update photo count
+            document.getElementById('photos-shared').textContent = photos.length;
+        }
+        
+        // Function to open the photo modal
+        function openPhotoModal(index) {
+            const photo = photos[index];
+            document.getElementById('modal-image').src = photo.imageUrl;
+            document.getElementById('modal-caption').textContent = 
+                photo.caption + ' - ' + new Date(photo.timestamp).toLocaleString();
+            document.getElementById('photo-modal').style.display = 'flex';
+        }
+        
+        // Function to close the photo modal
+        document.getElementById('close-modal').addEventListener('click', function() {
+            document.getElementById('photo-modal').style.display = 'none';
+        });
+        
+        // Load GPX files - replace these URLs with your actual GPX files
+        async function loadGPXFiles() {
+            // Example Strava route you provided
+            const stravaRouteID = "3312464853453405248";
+            
+            // This is just an example - you would need to replace with your actual GPX URLs
+            const gpxUrls = [
+                'https://www.icloud.com/iclouddrive/077njX8ce55CyX6d19fz7xsAg#Hope1000_-_day_1_website.gpx',
+                'https://www.icloud.com/iclouddrive/00awMvdOIeJrmrjmRGa-vpKxw#Hope1000_-_day_2_website.gpx',
+                // Add more GPX URLs for each stage
+            ];
+            
+            // Create stage buttons
+            createStageButtons();
+            
+            // Load first two stages from example
+            parseGPX('https://www.icloud.com/iclouddrive/077njX8ce55CyX6d19fz7xsAg#Hope1000_-_day_1_website.gpx', 0);
+            parseGPX('https://www.icloud.com/iclouddrive/00awMvdOIeJrmrjmRGa-vpKxw#Hope1000_-_day_2_website.gpx', 1);
+            
+            // Activate the first stage button
+            const firstStageButton = document.querySelector('.stage-button[data-stage="0"]');
+            if (firstStageButton) {
+                firstStageButton.classList.add('active');
+            }
+        }
+        
+        // Function to fetch spot data
+        async function fetchSpotData() {
+            try {
+                // In a real implementation, you would connect to Spot API or feed
+                // Example: `https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/{feed-id}/message.json`
+                
+                const response = await fetch('YOUR_SPOT_API_ENDPOINT');
+                const data = await response.json();
+                
+                // Process Spot data and update the map
+                // This would depend on the structure of the Spot API response
+                if (data && data.messages && data.messages.length > 0) {
+                    const latestMessage = data.messages[0];
+                    
+                    // Update position (format depends on Spot API)
+                    updatePosition(
+                        latestMessage.latitude,
+                        latestMessage.longitude,
+                        latestMessage.dateTime
+                    );
+                }
+            } catch (error) {
+                console.error('Error fetching Spot data:', error);
+            }
+        }
+        
+        // Initialize the application
+        async function initApp() {
+            // Load GPX routes
+            await loadGPXFiles();
+            
+            // Set up periodic Spot data fetching (every 5 minutes)
+            // setInterval(fetchSpotData, 5 * 60 * 1000);
+            
+            // Initial Spot data fetch
+            // fetchSpotData();
+        }
+        
+        // Start the application
+        initApp();
+        
+        // DEMO FUNCTIONS - For testing only
+        function runDemo() {
+            // Simulate a journey along the first stage
+            let progress = 0;
+            
+            // Update position every 5 seconds in the demo
+            const positionInterval = setInterval(() => {
+                if (!routes.stages[0] || progress >= 1) {
+                    clearInterval(positionInterval);
+                    return;
+                }
+                
+                const points = routes.stages[0].points;
+                const pointIndex = Math.floor(progress * (points.length - 1));
+                
+                // Update the position
+                updatePosition(
+                    points[pointIndex][0],
+                    points[pointIndex][1],
+                    new Date().toISOString()
+                );
+                
+                // Move along the route
+                progress += 0.05;
+                
+                // Add a photo occasionally
+                if (Math.random() < 0.2) {
+                    addPhoto(
+                        points[pointIndex][0],
+                        points[pointIndex][1],
+                        "/api/placeholder/400/300",
+                        `Beautiful views from Day 1!`,
+                        new Date().toISOString()
+                    );
+                }
+            }, 5000);
+        }
+        
+        // Uncomment to run the demo
+        // setTimeout(runDemo, 2000);
+    </script>
 </body>
 </html>
