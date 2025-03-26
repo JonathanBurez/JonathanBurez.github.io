@@ -24,6 +24,11 @@
             zoom: 7 // Initial zoom level
         });
 
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
         // Optional: Add navigation controls
         map.addControl(new maplibregl.NavigationControl());
 
