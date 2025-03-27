@@ -329,6 +329,30 @@
             opacity: 0.8
         }).addTo(map);
         
+        EPCmarker = new Marker()
+            .setLngLat([0, 0])
+            .addTo(map);
+          // Create an instance (with no options)
+        epc = new ElevationProfileControl({
+          container: "profileContainer",
+          visible: true,
+          showButton: false,
+          profileLineColor: "#66f",
+          profileBackgroundColor: "#a103fc11",
+          displayTooltip: true,
+          onMove: (data) => {
+            marker.setLngLat(data.position)
+          },
+        });
+          // Add it to your map
+        map.addControl(epc);
+
+        // Add some data (from a URL or a MapTiler Data UUID)
+        const sourceObject = map.getSource(polyline.polylineSourceId);
+        epc.setData(sourceObject._data);
+
+        moveMarkerToGPXStart(sourceObject._data);
+
         // Function to parse GPX files
         async function parseGPX(url, stageIndex) {
             try {
@@ -366,7 +390,7 @@
                     elevation: calculateElevationGain(trackPoints),
                     line: L.polyline(trackPoints.map(p => [p[0], p[1]]), {
                         color: stageColors[stageIndex],
-                        weight: 3,
+                        weight: 2,
                         opacity: 0.7
                     })
                 };
@@ -617,105 +641,7 @@
         document.getElementById('close-modal').addEventListener('click', function() {
             document.getElementById('photo-modal').style.display = 'none';
         });
-        // Function to create elevation profile
-// Function to create elevation profile
-function createElevationProfile(stageIndex) {
-    // Check if Chart is available
-    if (typeof Chart === 'undefined') {
-        console.error('Chart.js not loaded');
-        return;
-    }
 
-    // Remove any existing profile container
-    const existingProfile = document.getElementById('elevation-profile');
-    if (existingProfile) {
-        existingProfile.remove();
-    }
-
-    // Check if stage exists
-    if (!routes.stages[stageIndex]) {
-        console.error('Stage not found');
-        return;
-    }
-
-    // Create profile container
-    const profileContainer = document.getElementById('profileContainer');
-    const profileCanvas = document.createElement('canvas');
-    profileCanvas.id = 'elevation-profile';
-    profileCanvas.style.width = '100%';
-    profileCanvas.style.height = '300px'; // Increased height
-    profileContainer.appendChild(profileCanvas);
-
-    // Extract elevation data
-    const stageRoute = routes.stages[stageIndex];
-    const elevations = stageRoute.points.map(point => point[2]); // Get elevation values
-    const distances = stageRoute.points.map((point, index) => {
-        if (index === 0) return 0;
-        const prevPoint = L.latLng(stageRoute.points[index-1][0], stageRoute.points[index-1][1]);
-        const currPoint = L.latLng(point[0], point[1]);
-        return prevPoint.distanceTo(currPoint) / 1000; // Convert to kilometers
-    }).reduce((acc, curr, index) => {
-        acc.push(index === 0 ? 0 : acc[index-1] + curr);
-        return acc;
-    }, []);
-
-    // Calculate total route distance
-    const totalDistance = distances[distances.length - 1];
-
-    // Create chart
-    const ctx = profileCanvas.getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: distances,
-            datasets: [{
-                label: false, // Remove label
-                data: elevations,
-                borderColor: stageColors[stageIndex],
-                backgroundColor: `${stageColors[stageIndex]}33`, // Transparent fill
-                tension: 0.1,
-                fill: true,
-                borderWidth: 0.5 // Thin line
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false // Remove legend
-                },
-                title: {
-                    display: true,
-                    text: `Stage ${stageIndex + 1} Elevation Profile`
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Distance (km)'
-                    },
-                    ticks: {
-                        // Use the explicitly generated ticks
-                        stepSize: 5000
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Elevation (m)'
-                    },
-                    min: 0,
-                    max: 2500, // Always go up to 2500m
-                    ticks: {
-                        stepSize: 500 // 500m intervals
-                    }
-                }
-            }
-        }
-    });
-}
 // Modify stage button click event to ensure elevation profile works correctly
 function createStageButtons() {
     const stageSelector = document.getElementById('stage-selector');
