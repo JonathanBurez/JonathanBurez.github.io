@@ -659,6 +659,15 @@ function createElevationProfile(stageIndex) {
         return acc;
     }, []);
 
+    // Calculate total route distance
+    const totalDistance = distances[distances.length - 1];
+
+    // Generate precise 5km ticks
+    const xTicks = [];
+    for (let i = 0; i <= Math.ceil(totalDistance); i += 5) {
+        xTicks.push(i);
+    }
+
     // Create chart
     const ctx = profileCanvas.getContext('2d');
     new Chart(ctx, {
@@ -672,7 +681,7 @@ function createElevationProfile(stageIndex) {
                 backgroundColor: `${stageColors[stageIndex]}33`, // Transparent fill
                 tension: 0.1,
                 fill: true,
-                borderWidth: 0.5 // Thinner line
+                borderWidth: 0.5 // Thin line
             }]
         },
         options: {
@@ -688,17 +697,14 @@ function createElevationProfile(stageIndex) {
                 }
             },
             scales: {
-              x: {
+                x: {
                     title: {
                         display: true,
                         text: 'Distance (km)'
                     },
                     ticks: {
-                        // Explicitly generate ticks at 5km intervals
-                        callback: function(value) {
-                            const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-                            return numericValue % 5 === 0 ? numericValue.toFixed(0) : '';
-                        }
+                        // Use the explicitly generated ticks
+                        values: xTicks
                     }
                 },
                 y: {
@@ -716,7 +722,6 @@ function createElevationProfile(stageIndex) {
         }
     });
 }
-
 // Modify stage button click event to ensure elevation profile works correctly
 function createStageButtons() {
     const stageSelector = document.getElementById('stage-selector');
