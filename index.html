@@ -662,12 +662,6 @@ function createElevationProfile(stageIndex) {
     // Calculate total route distance
     const totalDistance = distances[distances.length - 1];
 
-    // Generate precise 5km ticks
-    const xTicks = [];
-    for (let i = 0; i <= Math.ceil(totalDistance); i += 5) {
-        xTicks.push(i);
-    }
-
     // Create chart
     const ctx = profileCanvas.getContext('2d');
     new Chart(ctx, {
@@ -702,9 +696,11 @@ function createElevationProfile(stageIndex) {
                         display: true,
                         text: 'Distance (km)'
                     },
+                    min: 0,
+                    max: 125,
                     ticks: {
                         // Use the explicitly generated ticks
-                        values: xTicks
+                        stepSize: 5
                     }
                 },
                 y: {
