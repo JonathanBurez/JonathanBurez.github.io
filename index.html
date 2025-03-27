@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Switzerland Cycling Adventure Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -222,12 +223,17 @@
     </div>
 
     <script>
-      const key = 'Rx7It18F2RfVcfR5JyxV';
-      const map = L.map('map').setView([46.8182, 8.2275], 8);
-      const mtLayer = L.maptiler.maptilerLayer({
-        apiKey: key,
-        style: L.maptiler.MapStyle.STREETS, //optional
-      }).addTo(map);
+//      const key = 'Rx7It18F2RfVcfR5JyxV';
+//      const map = L.map('map').setView([46.8182, 8.2275], 8);
+      maptilersdk.config.apiKey = 'Rx7It18F2RfVcfR5JyxV';
+      const map = new maptilersdk.Map({
+        container: 'map', // container's id or the HTML element to render the map
+        style: "ch-swisstopo-lbm",
+      });
+//      const mtLayer = L.maptiler.maptilerLayer({
+//        apiKey: key,
+//        style: L.maptiler.MapStyle.STREETS, //optional
+//      }).addTo(map);
         // Initialize the map centered on Switzerland
         // const map = L.map('map').setView([46.8182, 8.2275], 8);
         
