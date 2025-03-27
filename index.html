@@ -227,7 +227,7 @@
       function loadChartJS() {
           return new Promise((resolve, reject) => {
               const chartScript = document.createElement('script');
-              chartScript.src = "https://cdn.skypack.dev/chart.js";
+              chartScript.src = "https://unpkg.com/chart.js@4.1.0/dist/chart.umd.js";
               chartScript.onload = () => {
                   console.log('Chart.js loaded successfully');
                   resolve();
