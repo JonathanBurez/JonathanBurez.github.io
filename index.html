@@ -30,21 +30,28 @@
         #map {
             flex: 1;
             min-height: 70vh;
+            position: relative;
         }
         #info-panel {
-            padding: 20px;
-            background-color: #f1faee;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 300px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         #trip-stats {
             display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
+            flex-direction: column;
+            gap: 10px;
         }
         .stat-box {
             background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 10px;
+            border-radius: 6px;
             text-align: center;
         }
         .stat-value {
@@ -425,30 +432,48 @@
         
         // Create stage buttons
         function createStageButtons() {
-            const stageSelector = document.getElementById('stage-selector');
-            stageSelector.innerHTML = '';
+    const stageSelector = document.getElementById('stage-selector');
+    stageSelector.innerHTML = '';
+    
+    for (let i = 0; i < 11; i++) {
+        const button = document.createElement('button');
+        button.className = 'stage-button';
+        button.textContent = `Stage ${i + 1}`;
+        button.setAttribute('data-stage', i);
+        
+        button.addEventListener('click', function() {
+            const stage = parseInt(this.getAttribute('data-stage'));
             
-            for (let i = 0; i < 11; i++) {
-                const button = document.createElement('button');
-                button.className = 'stage-button';
-                button.textContent = `Stage ${i + 1}`;
-                button.setAttribute('data-stage', i);
+            // If the clicked button is already active, deactivate it and reset map view
+            if (this.classList.contains('active')) {
+                this.classList.remove('active');
+                // Reset map to initial view
+                map.setView([46.8182, 8.2275], 8);
                 
-                button.addEventListener('click', function() {
-                    const stage = parseInt(this.getAttribute('data-stage'));
-                    focusOnStage(stage);
-                    
-                    // Update active button
-                    document.querySelectorAll('.stage-button').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    this.classList.add('active');
+                // Reset stats to initial or blank state
+                document.getElementById('current-stage').textContent = '0/11';
+                document.getElementById('elevation-gain').textContent = '0';
+                document.getElementById('distance-traveled').textContent = '0';
+            } else {
+                // Deactivate all buttons first
+                document.querySelectorAll('.stage-button').forEach(btn => {
+                    btn.classList.remove('active');
                 });
                 
-                stageSelector.appendChild(button);
+                // Activate clicked button
+                this.classList.add('active');
+                focusOnStage(stage);
+                
+                // Create elevation profile when stage is clicked
+                createElevationProfile(stage);
             }
-        }
+        });
         
+        stageSelector.appendChild(button);
+    }
+}
+
+
         // Focus on a specific stage
         function focusOnStage(stageIndex) {
             if (routes.stages[stageIndex]) {
