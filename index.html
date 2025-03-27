@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Switzerland Cycling Adventure Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.umd.min.js"></script>
     <link href="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.css" rel="stylesheet" />
@@ -232,7 +232,7 @@
  //     });
       const mtLayer = L.maptiler.maptilerLayer({
         apiKey: key,
-        style: L.maptiler."ch-swisstopo-lbm", //optional
+        style: L.maptiler.ch-swisstopo-lbm, //optional
       }).addTo(map);
         // Initialize the map centered on Switzerland
         // const map = L.map('map').setView([46.8182, 8.2275], 8);
