@@ -607,6 +607,10 @@
         });
         // Function to create elevation profile
 function createElevationProfile(stageIndex) {
+    // Check if Chart is available
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js not loaded');
+        return;
     // Remove any existing profile container
     const existingProfile = document.getElementById('elevation-profile');
     if (existingProfile) {
@@ -697,13 +701,21 @@ document.querySelectorAll('.stage-button').forEach(button => {
     });
 });
 
-// Add Chart.js library import
-const chartScript = document.createElement('script');
-chartScript.src = "https://cdn.skypack.dev/chart.js";
-chartScript.onload = () => {
-    console.log('Chart.js loaded successfully');
-};
-document.head.appendChild(chartScript);
+
+// Modify Chart.js loading
+function loadChartJS() {
+    return new Promise((resolve, reject) => {
+        const chartScript = document.createElement('script');
+        chartScript.src = "https://cdn.skypack.dev/chart.js";
+        chartScript.onload = () => {
+            console.log('Chart.js loaded successfully');
+            resolve();
+        };
+        chartScript.onerror = reject;
+        document.head.appendChild(chartScript);
+    });
+}
+
 
         // Load GPX files - replace these URLs with your actual GPX files
         async function loadGPXFiles() {
@@ -757,20 +769,21 @@ document.head.appendChild(chartScript);
             }
         }
         
-        // Initialize the application
-        async function initApp() {
-            // Load GPX routes
-            await loadGPXFiles();
-            // After loading GPX files
-            if (routes.stages[0]) {
-                createElevationProfile(0);
-            }
-            // Set up periodic Spot data fetching (every 5 minutes)
-            // setInterval(fetchSpotData, 5 * 60 * 1000);
-            
-            // Initial Spot data fetch
-            // fetchSpotData();
+// Modify initialization to wait for Chart.js
+async function initApp() {
+    // First load Chart.js
+    await loadChartJS();
+
+    // Then load GPX routes
+    await loadGPXFiles();
+
+    // Wait a moment to ensure routes are fully loaded
+    setTimeout(() => {
+        if (routes.stages[0]) {
+            createElevationProfile(0);
         }
+    }, 500);
+}
         
         // Start the application
         initApp();
