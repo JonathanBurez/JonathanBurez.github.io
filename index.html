@@ -698,12 +698,9 @@ document.querySelectorAll('.stage-button').forEach(button => {
 });
 
 // Add Chart.js library import
-const chartScript = document.createElement('script');
-chartScript.src = "https://cdn.jsdelivr.net/npm/chart.js";
-chartScript.onload = () => {
-    console.log('Chart.js loaded successfully');
-};
-document.head.appendChild(chartScript);
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+document.head.appendChild(ProfileContainer);
 
         // Load GPX files - replace these URLs with your actual GPX files
         async function loadGPXFiles() {
