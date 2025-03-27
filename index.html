@@ -643,7 +643,7 @@ function createElevationProfile(stageIndex) {
     const profileCanvas = document.createElement('canvas');
     profileCanvas.id = 'elevation-profile';
     profileCanvas.style.width = '100%';
-    profileCanvas.style.height = '200px';
+    profileCanvas.style.height = '300px'; // Increased height
     profileContainer.appendChild(profileCanvas);
 
     // Extract elevation data
@@ -666,41 +666,52 @@ function createElevationProfile(stageIndex) {
         data: {
             labels: distances,
             datasets: [{
-                label: `Stage ${stageIndex + 1} Elevation Profile`,
+                label: false, // Remove label
                 data: elevations,
                 borderColor: stageColors[stageIndex],
                 backgroundColor: `${stageColors[stageIndex]}33`, // Transparent fill
                 tension: 0.1,
-                fill: true
+                fill: true,
+                borderWidth: 1 // Thinner line
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false // Remove legend
+                },
+                title: {
+                    display: true,
+                    text: `Stage ${stageIndex + 1} Elevation Profile`
+                }
+            },
             scales: {
                 x: {
                     title: {
                         display: true,
                         text: 'Distance (km)'
+                    },
+                    ticks: {
+                        stepSize: 5 // 5km tick marks
                     }
                 },
                 y: {
                     title: {
                         display: true,
                         text: 'Elevation (m)'
+                    },
+                    min: 0,
+                    max: 2500, // Always go up to 2500m
+                    ticks: {
+                        stepSize: 500 // 500m intervals
                     }
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: `Stage ${stageIndex + 1} Elevation Profile`
                 }
             }
         }
     });
 }
-
 
 // Modify stage button click event to ensure elevation profile works correctly
 function createStageButtons() {
