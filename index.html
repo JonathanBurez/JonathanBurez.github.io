@@ -186,6 +186,7 @@
             </div>
         </div>
         <div id="map"></div>
+        <div id="profileContainer"></div>
         <div id="info-panel">
             <div id="trip-stats">
                 <div class="stat-box">
@@ -470,7 +471,7 @@
             if (!pathLine) {
                 pathLine = L.polyline(actualPath, {
                     color: '#e63946',
-                    weight: 5,
+                    weight: 3,
                     opacity: 0.8
                 }).addTo(map);
             } else {
