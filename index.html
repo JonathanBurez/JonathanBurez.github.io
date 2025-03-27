@@ -7,6 +7,15 @@
     <title>Switzerland Cycling Adventure Tracker</title>
     <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' />
     <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
+    <link href='https://watergis.github.io/mapbox-gl-legend/mapbox-gl-legend.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.13.1/mapbox-gl.js'></script>
+    <script src="https://watergis.github.io/mapbox-gl-legend/mapbox-gl-legend.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.umd.min.js"></script>
+    <link href="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.css" rel="stylesheet" />
+    <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v4.0.2/leaflet-maptilersdk.umd.min.js"></script>
+   
     <style>
         body {
             margin: 0;
@@ -224,7 +233,7 @@
         container: 'map', // container id
         style:
             'https://vectortiles.geo.admin.ch/styles/ch.swisstopo.lightbasemap_world.vt/style.json?key=xmETqTBaiAH9bbZXXiFm', //stylesheet location
-      center: [7.45150, 46.92815], // starting position
+  //    center: [7.45150, 46.92815], // starting position
         zoom: 7 // starting zoom
     });
     map.addControl(new maplibregl.NavigationControl({
@@ -234,10 +243,9 @@
         showCompass: true
     }));
 
-//    map.addControl(new maplibregl.FullscreenControl());
 
 //      const key = 'Rx7It18F2RfVcfR5JyxV';
-//      const map = L.map('map').setView([46.8182, 8.2275], 8);
+      const map = L.map('map').setView([46.8182, 8.2275], 8);
 //      maptilersdk.config.apiKey = 'Rx7It18F2RfVcfR5JyxV';
 //      const map = new maptilersdk.Map({
  //       container: 'map', // container's id or the HTML element to render the map
