@@ -223,17 +223,17 @@
     </div>
 
     <script>
-//      const key = 'Rx7It18F2RfVcfR5JyxV';
-//      const map = L.map('map').setView([46.8182, 8.2275], 8);
-      maptilersdk.config.apiKey = 'Rx7It18F2RfVcfR5JyxV';
-      const map = new maptilersdk.Map({
-        container: 'map', // container's id or the HTML element to render the map
-        style: "ch-swisstopo-lbm",
-      });
-//      const mtLayer = L.maptiler.maptilerLayer({
-//        apiKey: key,
-//        style: L.maptiler.MapStyle.STREETS, //optional
-//      }).addTo(map);
+      const key = 'Rx7It18F2RfVcfR5JyxV';
+      const map = L.map('map').setView([46.8182, 8.2275], 8);
+//      maptilersdk.config.apiKey = 'Rx7It18F2RfVcfR5JyxV';
+//      const map = new maptilersdk.Map({
+ //       container: 'map', // container's id or the HTML element to render the map
+ //       style: "ch-swisstopo-lbm",
+ //     });
+      const mtLayer = L.maptiler.maptilerLayer({
+        apiKey: key,
+        style: L.maptiler."ch-swisstopo-lbm", //optional
+      }).addTo(map);
         // Initialize the map centered on Switzerland
         // const map = L.map('map').setView([46.8182, 8.2275], 8);
         
