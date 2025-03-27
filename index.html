@@ -150,11 +150,13 @@
             font-weight: bold;
             transition: all 0.2s;
         }
+
         .stage-button:hover {
             background-color: #1d3557;
         }
+
         .stage-button.active {
-            background-color: #e63946;
+            background-color: #1d3557; /* Dark blue when active */
             transform: scale(1.05);
         }
         .legend {
@@ -432,7 +434,7 @@
         }
         
         // Create stage buttons
-          function createStageButtons() {
+        function createStageButtons() {
             const stageSelector = document.getElementById('stage-selector');
             stageSelector.innerHTML = '';
             
@@ -445,9 +447,10 @@
                 button.addEventListener('click', function() {
                     const stage = parseInt(this.getAttribute('data-stage'));
                     
-                    // If the clicked button is already active, deactivate it and reset map view
+                    // If the clicked button is already active, deactivate it
                     if (this.classList.contains('active')) {
                         this.classList.remove('active');
+                        
                         // Reset map to initial view
                         map.setView([46.8182, 8.2275], 8);
                         
@@ -467,9 +470,11 @@
                         
                         // Activate clicked button
                         this.classList.add('active');
+                        
+                        // Focus on the stage
                         focusOnStage(stage);
                         
-                        // Create elevation profile when stage is clicked
+                        // Create elevation profile
                         createElevationProfile(stage);
                     }
                 });
@@ -477,7 +482,6 @@
                 stageSelector.appendChild(button);
             }
         }
-
 
         // Focus on a specific stage
         function focusOnStage(stageIndex) {
