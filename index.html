@@ -313,7 +313,7 @@
         // Initialize the actual traveled path
         pathLine = L.polyline([], {
             color: '#e63946',
-            weight: 5,
+            weight: 3,
             opacity: 0.8
         }).addTo(map);
         
@@ -354,7 +354,7 @@
                     elevation: calculateElevationGain(trackPoints),
                     line: L.polyline(trackPoints.map(p => [p[0], p[1]]), {
                         color: stageColors[stageIndex],
-                        weight: 5,
+                        weight: 3,
                         opacity: 0.7
                     })
                 };
