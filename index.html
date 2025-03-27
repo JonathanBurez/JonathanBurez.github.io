@@ -618,12 +618,14 @@
             document.getElementById('photo-modal').style.display = 'none';
         });
         // Function to create elevation profile
+// Function to create elevation profile
 function createElevationProfile(stageIndex) {
     // Check if Chart is available
     if (typeof Chart === 'undefined') {
         console.error('Chart.js not loaded');
         return;
     }
+
     // Remove any existing profile container
     const existingProfile = document.getElementById('elevation-profile');
     if (existingProfile) {
@@ -699,20 +701,35 @@ function createElevationProfile(stageIndex) {
     });
 }
 
-// Modify existing stage button click event to include elevation profile
-document.querySelectorAll('.stage-button').forEach(button => {
-    button.addEventListener('click', function() {
-        const stage = parseInt(this.getAttribute('data-stage'));
-        focusOnStage(stage);
-        createElevationProfile(stage);
+
+// Modify stage button click event to ensure elevation profile works correctly
+function createStageButtons() {
+    const stageSelector = document.getElementById('stage-selector');
+    stageSelector.innerHTML = '';
+    
+    for (let i = 0; i < 11; i++) {
+        const button = document.createElement('button');
+        button.className = 'stage-button';
+        button.textContent = `Stage ${i + 1}`;
+        button.setAttribute('data-stage', i);
         
-        // Update active button
-        document.querySelectorAll('.stage-button').forEach(btn => {
-            btn.classList.remove('active');
+        button.addEventListener('click', function() {
+            const stage = parseInt(this.getAttribute('data-stage'));
+            focusOnStage(stage);
+            
+            // Create elevation profile when stage is clicked
+            createElevationProfile(stage);
+            
+            // Update active button
+            document.querySelectorAll('.stage-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
         });
-        this.classList.add('active');
-    });
-});
+        
+        stageSelector.appendChild(button);
+    }
+}
 
 
         // Load GPX files - replace these URLs with your actual GPX files
@@ -775,12 +792,6 @@ async function initApp() {
     // Then load GPX routes
     await loadGPXFiles();
 
-    // Wait a moment to ensure routes are fully loaded
-    setTimeout(() => {
-        if (routes.stages[0]) {
-            createElevationProfile(0);
-        }
-    }, 500);
 }
         
         // Start the application
