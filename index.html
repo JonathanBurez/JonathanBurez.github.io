@@ -605,7 +605,106 @@
         document.getElementById('close-modal').addEventListener('click', function() {
             document.getElementById('photo-modal').style.display = 'none';
         });
+        // Function to create elevation profile
+function createElevationProfile(stageIndex) {
+    // Remove any existing profile container
+    const existingProfile = document.getElementById('elevation-profile');
+    if (existingProfile) {
+        existingProfile.remove();
+    }
+
+    // Check if stage exists
+    if (!routes.stages[stageIndex]) {
+        console.error('Stage not found');
+        return;
+    }
+
+    // Create profile container
+    const profileContainer = document.getElementById('profileContainer');
+    const profileCanvas = document.createElement('canvas');
+    profileCanvas.id = 'elevation-profile';
+    profileCanvas.style.width = '100%';
+    profileCanvas.style.height = '200px';
+    profileContainer.appendChild(profileCanvas);
+
+    // Extract elevation data
+    const stageRoute = routes.stages[stageIndex];
+    const elevations = stageRoute.points.map(point => point[2]); // Get elevation values
+    const distances = stageRoute.points.map((point, index) => {
+        if (index === 0) return 0;
+        const prevPoint = L.latLng(stageRoute.points[index-1][0], stageRoute.points[index-1][1]);
+        const currPoint = L.latLng(point[0], point[1]);
+        return prevPoint.distanceTo(currPoint) / 1000; // Convert to kilometers
+    }).reduce((acc, curr, index) => {
+        acc.push(index === 0 ? 0 : acc[index-1] + curr);
+        return acc;
+    }, []);
+
+    // Create chart
+    const ctx = profileCanvas.getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: distances,
+            datasets: [{
+                label: `Stage ${stageIndex + 1} Elevation Profile`,
+                data: elevations,
+                borderColor: stageColors[stageIndex],
+                backgroundColor: `${stageColors[stageIndex]}33`, // Transparent fill
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Distance (km)'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Elevation (m)'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Stage ${stageIndex + 1} Elevation Profile`
+                }
+            }
+        }
+    });
+}
+
+// Modify existing stage button click event to include elevation profile
+document.querySelectorAll('.stage-button').forEach(button => {
+    button.addEventListener('click', function() {
+        const stage = parseInt(this.getAttribute('data-stage'));
+        focusOnStage(stage);
+        createElevationProfile(stage);
         
+        // Update active button
+        document.querySelectorAll('.stage-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        this.classList.add('active');
+    });
+});
+
+// Add Chart.js library import
+const chartScript = document.createElement('script');
+chartScript.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+chartScript.onload = () => {
+    console.log('Chart.js loaded successfully');
+};
+document.head.appendChild(chartScript);
+
         // Load GPX files - replace these URLs with your actual GPX files
         async function loadGPXFiles() {
 
@@ -662,7 +761,10 @@
         async function initApp() {
             // Load GPX routes
             await loadGPXFiles();
-            
+            // After loading GPX files
+            if (routes.stages[0]) {
+                createElevationProfile(0);
+            }
             // Set up periodic Spot data fetching (every 5 minutes)
             // setInterval(fetchSpotData, 5 * 60 * 1000);
             
