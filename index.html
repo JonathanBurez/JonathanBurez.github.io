@@ -227,6 +227,12 @@
       center: [7.45150, 46.92815], // starting position
         zoom: 7 // starting zoom
     });
+    map.addControl(new maplibregl.NavigationControl({
+        visualizePitch: true,
+        visualizeRoll: true,
+        showZoom: true,
+        showCompass: true
+    }));
 
 //    map.addControl(new maplibregl.FullscreenControl());
 
