@@ -672,7 +672,7 @@ function createElevationProfile(stageIndex) {
                 backgroundColor: `${stageColors[stageIndex]}33`, // Transparent fill
                 tension: 0.1,
                 fill: true,
-                borderWidth: 1 // Thinner line
+                borderWidth: 0.5 // Thinner line
             }]
         },
         options: {
@@ -688,13 +688,17 @@ function createElevationProfile(stageIndex) {
                 }
             },
             scales: {
-                x: {
+              x: {
                     title: {
                         display: true,
                         text: 'Distance (km)'
                     },
                     ticks: {
-                        stepSize: 5 // 5km tick marks
+                        // Explicitly generate ticks at 5km intervals
+                        callback: function(value) {
+                            const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+                            return numericValue % 5 === 0 ? numericValue.toFixed(0) : '';
+                        }
                     }
                 },
                 y: {
