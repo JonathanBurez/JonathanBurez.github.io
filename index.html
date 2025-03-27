@@ -34,7 +34,7 @@
         }
         #info-panel {
             position: absolute;
-            top: 250px;
+            top: 300px;
             left: 20px;
             width: 300px;
             background-color: rgba(255, 255, 255, 0.9);
@@ -431,47 +431,51 @@
         }
         
         // Create stage buttons
-        function createStageButtons() {
-    const stageSelector = document.getElementById('stage-selector');
-    stageSelector.innerHTML = '';
-    
-    for (let i = 0; i < 11; i++) {
-        const button = document.createElement('button');
-        button.className = 'stage-button';
-        button.textContent = `Stage ${i + 1}`;
-        button.setAttribute('data-stage', i);
-        
-        button.addEventListener('click', function() {
-            const stage = parseInt(this.getAttribute('data-stage'));
+          function createStageButtons() {
+            const stageSelector = document.getElementById('stage-selector');
+            stageSelector.innerHTML = '';
             
-            // If the clicked button is already active, deactivate it and reset map view
-            if (this.classList.contains('active')) {
-                this.classList.remove('active');
-                // Reset map to initial view
-                map.setView([46.8182, 8.2275], 8);
+            for (let i = 0; i < 11; i++) {
+                const button = document.createElement('button');
+                button.className = 'stage-button';
+                button.textContent = `Stage ${i + 1}`;
+                button.setAttribute('data-stage', i);
                 
-                // Reset stats to initial or blank state
-                document.getElementById('current-stage').textContent = '0/11';
-                document.getElementById('elevation-gain').textContent = '0';
-                document.getElementById('distance-traveled').textContent = '0';
-            } else {
-                // Deactivate all buttons first
-                document.querySelectorAll('.stage-button').forEach(btn => {
-                    btn.classList.remove('active');
+                button.addEventListener('click', function() {
+                    const stage = parseInt(this.getAttribute('data-stage'));
+                    
+                    // If the clicked button is already active, deactivate it and reset map view
+                    if (this.classList.contains('active')) {
+                        this.classList.remove('active');
+                        // Reset map to initial view
+                        map.setView([46.8182, 8.2275], 8);
+                        
+                        // Reset stats to initial or blank state
+                        document.getElementById('current-stage').textContent = '0/11';
+                        document.getElementById('elevation-gain').textContent = '0';
+                        document.getElementById('distance-traveled').textContent = '0';
+                        
+                        // Remove any existing elevation profile
+                        const profileContainer = document.getElementById('profileContainer');
+                        profileContainer.innerHTML = '';
+                    } else {
+                        // Deactivate all buttons first
+                        document.querySelectorAll('.stage-button').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        
+                        // Activate clicked button
+                        this.classList.add('active');
+                        focusOnStage(stage);
+                        
+                        // Create elevation profile when stage is clicked
+                        createElevationProfile(stage);
+                    }
                 });
                 
-                // Activate clicked button
-                this.classList.add('active');
-                focusOnStage(stage);
-                
-                // Create elevation profile when stage is clicked
-                createElevationProfile(stage);
+                stageSelector.appendChild(button);
             }
-        });
-        
-        stageSelector.appendChild(button);
-    }
-}
+        }
 
 
         // Focus on a specific stage
