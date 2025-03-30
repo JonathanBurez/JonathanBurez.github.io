@@ -135,29 +135,27 @@
         }
         #stage-selector {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 10px 0;
             justify-content: center;
+            margin: 10px 0;
         }
-        .stage-button {
+        .stage-dropdown {
             background-color: #457b9d;
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 20px;
+            padding: 10px 15px;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
             font-weight: bold;
+            min-width: 200px;
             transition: all 0.2s;
         }
-
-        .stage-button:hover {
+        .stage-dropdown:hover {
             background-color: #1d3557;
         }
-
-        .stage-button.active {
-            background-color: #1d3557; /* Dark blue when active */
-            transform: scale(1.05);
+        .stage-dropdown:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(29, 53, 87, 0.5);
         }
         .legend {
             padding: 10px;
@@ -192,7 +190,20 @@
             <h1>Jo rides the Hope1000</h1>
             <p>Follow his 11-day journey through the beautiful Swiss landscapes</p>
             <div id="stage-selector">
-                <!-- Stage buttons will be added here dynamically -->
+                <select id="stage-dropdown" class="stage-dropdown">
+                    <option value="-1" selected>Whole Trip</option>
+                    <option value="0">Stage 1</option>
+                    <option value="1">Stage 2</option>
+                    <option value="2">Stage 3</option>
+                    <option value="3">Stage 4</option>
+                    <option value="4">Stage 5</option>
+                    <option value="5">Stage 6</option>
+                    <option value="6">Stage 7</option>
+                    <option value="7">Stage 8</option>
+                    <option value="8">Stage 9</option>
+                    <option value="9">Stage 10</option>
+                    <option value="10">Stage 11</option>
+                </select>
             </div>
         </div>
         <div id="map"></div>
@@ -433,56 +444,57 @@
             return gain;
         }
         
-        // Create stage buttons
-        function createStageButtons() {
-            const stageSelector = document.getElementById('stage-selector');
-            stageSelector.innerHTML = '';
+        // Function to handle stage dropdown change
+        function handleStageChange() {
+            const dropdown = document.getElementById('stage-dropdown');
+            const selectedValue = parseInt(dropdown.value);
             
-            for (let i = 0; i < 11; i++) {
-                const button = document.createElement('button');
-                button.className = 'stage-button';
-                button.textContent = `Stage ${i + 1}`;
-                button.setAttribute('data-stage', i);
-                
-                button.addEventListener('click', function() {
-                    const stage = parseInt(this.getAttribute('data-stage'));
-                    
-                    // If the clicked button is already active, deactivate it
-                    if (this.classList.contains('active')) {
-                        this.classList.remove('active');
-                        
-                        // Reset map to initial view
-                        map.setView([46.8182, 8.2275], 8);
-                        
-                        // Reset stats to initial or blank state
-                        document.getElementById('current-stage').textContent = '0/11';
-                        document.getElementById('elevation-gain').textContent = '0';
-                        document.getElementById('distance-traveled').textContent = '0';
-                        
-                        // Remove any existing elevation profile
-                        const profileContainer = document.getElementById('profileContainer');
-                        profileContainer.innerHTML = '';
-                    } else {
-                        // Deactivate all buttons first
-                        document.querySelectorAll('.stage-button').forEach(btn => {
-                            btn.classList.remove('active');
-                        });
-                        
-                        // Activate clicked button
-                        this.classList.add('active');
-                        
-                        // Focus on the stage
-                        focusOnStage(stage);
-                        
-                        // Create elevation profile
-                        createElevationProfile(stage);
-                    }
-                });
-                
-                stageSelector.appendChild(button);
+            if (selectedValue === -1) {
+                // Whole trip selected - show all stages and fit all bounds
+                showWholeTrip();
+            } else {
+                // Individual stage selected
+                focusOnStage(selectedValue);
+                createElevationProfile(selectedValue);
             }
         }
-
+        
+        // Function to show the whole trip
+        function showWholeTrip() {
+            // Zoom to fit all routes
+            const bounds = [];
+            let totalDistance = 0;
+            let totalElevation = 0;
+            
+            for (let i = 0; i < routes.stages.length; i++) {
+                if (routes.stages[i]) {
+                    const stage = routes.stages[i];
+                    const stagePoints = stage.points.map(p => [p[0], p[1]]);
+                    bounds.push(...stagePoints);
+                    
+                    // Sum up stats
+                    totalDistance += stage.distance;
+                    totalElevation += stage.elevation;
+                }
+            }
+            
+            if (bounds.length > 0) {
+                map.fitBounds(bounds.map(p => L.latLng(p[0], p[1])));
+                
+                // Update display
+                document.getElementById('current-stage').textContent = `All`;
+                document.getElementById('distance-traveled').textContent = totalDistance.toFixed(1);
+                document.getElementById('elevation-gain').textContent = totalElevation.toFixed(0);
+            } else {
+                // Fallback to Switzerland view if no routes loaded
+                map.setView([46.8182, 8.2275], 8);
+            }
+            
+            // Clear elevation profile when showing whole trip
+            const profileContainer = document.getElementById('profileContainer');
+            profileContainer.innerHTML = '';
+        }
+        
         // Focus on a specific stage
         function focusOnStage(stageIndex) {
             if (routes.stages[stageIndex]) {
@@ -564,15 +576,8 @@
             if (routes.current !== closestStage) {
                 routes.current = closestStage;
                 
-                // Update stage buttons
-                document.querySelectorAll('.stage-button').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                
-                const activeButton = document.querySelector(`.stage-button[data-stage="${closestStage}"]`);
-                if (activeButton) {
-                    activeButton.classList.add('active');
-                }
+                // Update dropdown to reflect current stage
+                document.getElementById('stage-dropdown').value = closestStage.toString();
                 
                 // Update stats display
                 document.getElementById('current-stage').textContent = `${closestStage + 1}/11`;
@@ -652,43 +657,89 @@
             document.getElementById('photo-modal').style.display = 'none';
         });
 
-// Modify stage button click event to ensure elevation profile works correctly
-function createStageButtons() {
-    const stageSelector = document.getElementById('stage-selector');
-    stageSelector.innerHTML = '';
-    
-    for (let i = 0; i < 11; i++) {
-        const button = document.createElement('button');
-        button.className = 'stage-button';
-        button.textContent = `Stage ${i + 1}`;
-        button.setAttribute('data-stage', i);
-        
-        button.addEventListener('click', function() {
-            const stage = parseInt(this.getAttribute('data-stage'));
-            focusOnStage(stage);
+        // Function to create elevation profile for a stage
+        function createElevationProfile(stageIndex) {
+            if (!routes.stages[stageIndex]) return;
             
-            // Create elevation profile when stage is clicked
-            createElevationProfile(stage);
+            const profileContainer = document.getElementById('profileContainer');
+            profileContainer.innerHTML = '';
             
-            // Update active button
-            document.querySelectorAll('.stage-button').forEach(btn => {
-                btn.classList.remove('active');
+            // Create canvas for the chart
+            const canvas = document.createElement('canvas');
+            canvas.id = 'elevationChart';
+            profileContainer.appendChild(canvas);
+            
+            // Extract elevation data from stage
+            const stage = routes.stages[stageIndex];
+            const elevationData = stage.points.map((point, index) => {
+                // Calculate distance from start for each point
+                let distanceFromStart = 0;
+                if (index > 0) {
+                    for (let i = 1; i <= index; i++) {
+                        const prevPoint = L.latLng(stage.points[i-1][0], stage.points[i-1][1]);
+                        const currPoint = L.latLng(stage.points[i][0], stage.points[i][1]);
+                        distanceFromStart += prevPoint.distanceTo(currPoint);
+                    }
+                }
+                
+                return {
+                    distance: distanceFromStart / 1000, // km
+                    elevation: point[2]
+                };
             });
-            this.classList.add('active');
-        });
-        
-        stageSelector.appendChild(button);
-    }
-}
-
+            
+            // Create chart
+            if (window.Chart) {
+                const ctx = document.getElementById('elevationChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: [{
+                            label: `Elevation Profile - Stage ${stageIndex + 1}`,
+                            data: elevationData,
+                            borderColor: stageColors[stageIndex],
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        parsing: {
+                            xAxisKey: 'distance',
+                            yAxisKey: 'elevation'
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                title: {
+                                    display: true,
+                                    text: 'Distance (km)'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Elevation (m)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `Elevation Profile - Stage ${stageIndex + 1}`
+                            }
+                        }
+                    }
+                });
+            }
+        }
 
         // Load GPX files - replace these URLs with your actual GPX files
         async function loadGPXFiles() {
-
-            // Create stage buttons
-            createStageButtons();
+            // Add event listener for dropdown
+            document.getElementById('stage-dropdown').addEventListener('change', handleStageChange);
             
-            // Load first two stages from example
+            // Load stages
             parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day01.gpx', 0);
             parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day02.gpx', 1);
             parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day03.gpx', 2);
@@ -701,11 +752,8 @@ function createStageButtons() {
             parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day10.gpx', 9);
             parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day11.gpx', 10);
             
-            // Activate the first stage button
-//            const firstStageButton = document.querySelector('.stage-button[data-stage="0"]');
-//            if (firstStageButton) {
-//                firstStageButton.classList.add('active');
-//            }
+            // Initialize with whole trip view
+            setTimeout(showWholeTrip, 1000);
         }
         
         // Function to fetch spot data
@@ -734,15 +782,14 @@ function createStageButtons() {
             }
         }
         
-// Modify initialization to wait for Chart.js
-async function initApp() {
-    // First load Chart.js
-    await loadChartJS();
+        // Modify initialization to wait for Chart.js
+        async function initApp() {
+            // First load Chart.js
+            await loadChartJS();
 
-    // Then load GPX routes
-    await loadGPXFiles();
-
-}
+            // Then load GPX routes
+            await loadGPXFiles();
+        }
         
         // Start the application
         initApp();
