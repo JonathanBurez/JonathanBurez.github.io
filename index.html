@@ -655,82 +655,126 @@
             document.getElementById('photo-modal').style.display = 'none';
         });
 
-        // Function to create elevation profile for a stage
-        function createElevationProfile(stageIndex) {
-            if (!routes.stages[stageIndex]) return;
-            
-            const profileContainer = document.getElementById('profileContainer');
-            profileContainer.innerHTML = '';
-            
-            // Create canvas for the chart
-            const canvas = document.createElement('canvas');
-            canvas.id = 'elevationChart';
-            profileContainer.appendChild(canvas);
-            
-            // Extract elevation data from stage
-            const stage = routes.stages[stageIndex];
-            const elevationData = stage.points.map((point, index) => {
-                // Calculate distance from start for each point
-                let distanceFromStart = 0;
-                if (index > 0) {
-                    for (let i = 1; i <= index; i++) {
-                        const prevPoint = L.latLng(stage.points[i-1][0], stage.points[i-1][1]);
-                        const currPoint = L.latLng(stage.points[i][0], stage.points[i][1]);
-                        distanceFromStart += prevPoint.distanceTo(currPoint);
-                    }
-                }
-                
-                return {
-                    distance: distanceFromStart / 1000, // km
-                    elevation: point[2]
-                };
-            });
-            
-            // Create chart
-            if (window.Chart) {
-                const ctx = document.getElementById('elevationChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        datasets: [{
-                            label: `Elevation Profile - Stage ${stageIndex + 1}`,
-                            data: elevationData,
-                            borderColor: stageColors[stageIndex],
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                            borderWidth: 2,
-                            pointRadius: 0
-                        }]
+  // Function to create elevation profile for a stage
+function createElevationProfile(stageIndex) {
+    if (!routes.stages[stageIndex]) return;
+    
+    const profileContainer = document.getElementById('profileContainer');
+    profileContainer.innerHTML = '';
+    
+    // Create canvas for the chart
+    const canvas = document.createElement('canvas');
+    canvas.id = 'elevationChart';
+    profileContainer.appendChild(canvas);
+    
+    // Extract elevation data from stage
+    const stage = routes.stages[stageIndex];
+    const elevationData = stage.points.map((point, index) => {
+        // Calculate distance from start for each point
+        let distanceFromStart = 0;
+        if (index > 0) {
+            for (let i = 1; i <= index; i++) {
+                const prevPoint = L.latLng(stage.points[i-1][0], stage.points[i-1][1]);
+                const currPoint = L.latLng(stage.points[i][0], stage.points[i][1]);
+                distanceFromStart += prevPoint.distanceTo(currPoint);
+            }
+        }
+        
+        return {
+            distance: distanceFromStart / 1000, // km
+            elevation: point[2],
+            lat: point[0],
+            lon: point[1],
+            index: index
+        };
+    });
+
+    // Create position marker for hovering
+    const hoverMarker = L.circleMarker([0, 0], {
+        radius: 8,
+        color: '#ff0000',
+        fillColor: '#ff0000',
+        fillOpacity: 0.5,
+        weight: 2
+    });
+    
+    // Create chart
+    if (window.Chart) {
+        const ctx = document.getElementById('elevationChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: `Elevation Profile - Stage ${stageIndex + 1}`,
+                    data: elevationData,
+                    borderColor: stageColors[stageIndex],
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                parsing: {
+                    xAxisKey: 'distance',
+                    yAxisKey: 'elevation'
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        title: {
+                            display: true,
+                            text: 'Distance (km)'
+                        }
                     },
-                    options: {
-                        parsing: {
-                            xAxisKey: 'distance',
-                            yAxisKey: 'elevation'
-                        },
-                        scales: {
-                            x: {
-                                type: 'linear',
-                                title: {
-                                    display: true,
-                                    text: 'Distance (km)'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Elevation (m)'
-                                }
-                            }
-                        },
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: `Elevation Profile - Stage ${stageIndex + 1}`
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Elevation (m)'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Elevation Profile - Stage ${stageIndex + 1}`
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            afterLabel: function(context) {
+                                return `Position: ${context.raw.lat.toFixed(5)}, ${context.raw.lon.toFixed(5)}`;
                             }
                         }
                     }
-                });
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                onHover: (event, elements) => {
+                    if (elements && elements.length > 0) {
+                        const dataIndex = elements[0].index;
+                        const pointData = elevationData[dataIndex];
+                        
+                        // Update marker position
+                        hoverMarker.setLatLng([pointData.lat, pointData.lon]);
+                        
+                        // Add marker to map if not already added
+                        if (!map.hasLayer(hoverMarker)) {
+                            hoverMarker.addTo(map);
+                        }
+                    } else {
+                        // Remove marker when not hovering over chart
+                        if (map.hasLayer(hoverMarker)) {
+                            map.removeLayer(hoverMarker);
+                        }
+                    }
+                }
             }
-        }
+        });
+    }
+}
 
         // Load GPX files - replace these URLs with your actual GPX files
         async function loadGPXFiles() {
