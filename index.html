@@ -655,7 +655,7 @@
             document.getElementById('photo-modal').style.display = 'none';
         });
 
-  // Function to create elevation profile for a stage
+// Function to create elevation profile for a stage
 function createElevationProfile(stageIndex) {
     if (!routes.stages[stageIndex]) return;
     
@@ -751,26 +751,31 @@ function createElevationProfile(stageIndex) {
                 interaction: {
                     mode: 'index',
                     intersect: false
-                },
-                onHover: (event, elements) => {
-                    if (elements && elements.length > 0) {
-                        const dataIndex = elements[0].index;
-                        const pointData = elevationData[dataIndex];
-                        
-                        // Update marker position
-                        hoverMarker.setLatLng([pointData.lat, pointData.lon]);
-                        
-                        // Add marker to map if not already added
-                        if (!map.hasLayer(hoverMarker)) {
-                            hoverMarker.addTo(map);
-                        }
-                    } else {
-                        // Remove marker when not hovering over chart
-                        if (map.hasLayer(hoverMarker)) {
-                            map.removeLayer(hoverMarker);
-                        }
-                    }
                 }
+            }
+        });
+        
+        // Add mouse event listeners to handle hover
+        canvas.addEventListener('mousemove', function(event) {
+            const points = chart.getElementsAtEventForMode(event, 'index', { intersect: false });
+            if (points.length > 0) {
+                const dataIndex = points[0].index;
+                const pointData = elevationData[dataIndex];
+                
+                // Update marker position
+                hoverMarker.setLatLng([pointData.lat, pointData.lon]);
+                
+                // Add marker to map if not already added
+                if (!map.hasLayer(hoverMarker)) {
+                    hoverMarker.addTo(map);
+                }
+            }
+        });
+        
+        // Remove marker when mouse leaves the chart
+        canvas.addEventListener('mouseout', function() {
+            if (map.hasLayer(hoverMarker)) {
+                map.removeLayer(hoverMarker);
             }
         });
     }
