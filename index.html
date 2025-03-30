@@ -714,46 +714,56 @@ function createElevationProfile(stageIndex) {
                     fill: true // Enable fill under the line
                 }]
             },
-            options: {
-                parsing: {
-                    xAxisKey: 'distance',
-                    yAxisKey: 'elevation'
+ // Inside the createElevationProfile function, modify the options section of the Chart configuration:
+options: {
+    parsing: {
+        xAxisKey: 'distance',
+        yAxisKey: 'elevation'
+    },
+    scales: {
+        x: {
+            type: 'linear',
+            title: {
+                display: true,
+                text: 'Distance (km)'
+            }
+        },
+        y: {
+            title: {
+                display: true,
+                text: 'Elevation (m)'
+            }
+        }
+    },
+    plugins: {
+        legend: {
+            display: false // Hide the legend
+        },
+        title: {
+            display: true,
+            text: `Elevation Profile - Stage ${stageIndex + 1}`
+        },
+        tooltip: {
+            mode: 'index',
+            intersect: false,
+            callbacks: {
+                title: function(context) {
+                    return `Distance: ${context[0].raw.distance.toFixed(1)} km`;
                 },
-                scales: {
-                    x: {
-                        type: 'linear',
-                        title: {
-                            display: true,
-                            text: 'Distance (km)'
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Elevation (m)'
-                        }
-                    }
+                label: function(context) {
+                    return `Elevation: ${context.raw.elevation.toFixed(0)} m`;
                 },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: `Elevation Profile - Stage ${stageIndex + 1}`
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        callbacks: {
-                            afterLabel: function(context) {
-                                return `Position: ${context.raw.lat.toFixed(5)}, ${context.raw.lon.toFixed(5)}`;
-                            }
-                        }
-                    }
-                },
-                interaction: {
-                    mode: 'index',
-                    intersect: false
+                afterLabel: function(context) {
+                    return `Position: ${context.raw.lat.toFixed(5)}, ${context.raw.lon.toFixed(5)}`;
                 }
             }
+        }
+    },
+    interaction: {
+        mode: 'index',
+        intersect: false
+    }
+}
         });
         
         // Add mouse event listeners to handle hover
