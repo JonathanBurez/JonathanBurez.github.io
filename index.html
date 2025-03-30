@@ -748,10 +748,10 @@ options: {
             intersect: false,
             callbacks: {
                 title: function(context) {
-                    return `Stats`;           },
+                    return `Elevation: ${context.raw.elevation.toFixed(0)} m`;
+                },
                 label: function(context) {
                     return `Distance: ${context[0].raw.distance.toFixed(1)} km`;
-                    return `Elevation: ${context[0].raw.elevation.toFixed(0)} m`;
                 },
                 afterLabel: function(context) {
                     return `Position: ${context.raw.lat.toFixed(5)}, ${context.raw.lon.toFixed(5)}`;
