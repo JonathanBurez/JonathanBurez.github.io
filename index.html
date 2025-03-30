@@ -749,12 +749,7 @@ options: {
             callbacks: {
                 title: function(context) {
                     return `Distance: ${context[0].raw.distance.toFixed(1)} km`;
-                },
-                label: function(context) {
                     return `Elevation: ${context.raw.elevation.toFixed(0)} m`;
-                },
-                afterLabel: function(context) {
-                    return `Position: ${context.raw.lat.toFixed(5)}, ${context.raw.lon.toFixed(5)}`;
                 }
             }
         }
