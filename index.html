@@ -318,19 +318,6 @@
                   <div id="last-update">Last updated: Not yet started</div>
               </div>
           `;
-          
-          // Add event listener for toggle
-          document.querySelector('.info-panel-header').addEventListener('click', function() {
-              const panel = document.getElementById('info-panel');
-              panel.classList.toggle('info-panel-collapsed');
-              
-              const toggle = document.querySelector('.info-panel-toggle');
-              if (panel.classList.contains('info-panel-collapsed')) {
-                  toggle.textContent = '▲';
-              } else {
-                  toggle.textContent = '▼';
-              }
-          });    
         </div>
 
     <div id="photo-modal">
@@ -947,14 +934,42 @@ options: {
             }
         }
         
-        // Modify initialization to wait for Chart.js
-        async function initApp() {
-            // First load Chart.js
-            await loadChartJS();
+// Modify initialization to wait for Chart.js
+async function initApp() {
+    // First load Chart.js
+    await loadChartJS();
 
-            // Then load GPX routes
-            await loadGPXFiles();
+    // Then load GPX routes
+    await loadGPXFiles();
+    
+    // Add the info panel header and toggle functionality
+    const infoPanel = document.getElementById('info-panel');
+    const infoPanelContent = infoPanel.innerHTML;
+    
+    // Wrap existing content in the panel content div
+    infoPanel.innerHTML = `
+        <div class="info-panel-header">
+            <h3 class="info-panel-title">Trip Information</h3>
+            <span class="info-panel-toggle">▼</span>
+        </div>
+        <div class="info-panel-content">
+            ${infoPanelContent}
+        </div>
+    `;
+    
+    // Add event listener for toggle
+    document.querySelector('.info-panel-header').addEventListener('click', function() {
+        const panel = document.getElementById('info-panel');
+        panel.classList.toggle('info-panel-collapsed');
+        
+        const toggle = document.querySelector('.info-panel-toggle');
+        if (panel.classList.contains('info-panel-collapsed')) {
+            toggle.textContent = '▲';
+        } else {
+            toggle.textContent = '▼';
         }
+    });
+}
         
         // Start the application
         initApp();
