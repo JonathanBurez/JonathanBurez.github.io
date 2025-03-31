@@ -791,6 +791,8 @@ function createElevationProfile(stageIndex) {
             },
  // Inside the createElevationProfile function, modify the options section of the Chart configuration:
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 parsing: {
                     xAxisKey: 'distance',
                     yAxisKey: 'elevation'
