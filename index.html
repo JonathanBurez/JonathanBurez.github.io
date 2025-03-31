@@ -476,12 +476,24 @@
                     const endPoint = trackPoints[trackPoints.length - 1];
                     
                     L.marker([startPoint[0], startPoint[1]], {
-                        title: `Stage ${stageIndex + 1} Start`
+                        title: `Stage ${stageIndex + 1} Start`,
+                        icon: L.icon({
+                            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                            iconSize: [15, 25], // Reduce from default [25, 41] to smaller size
+                            iconAnchor: [7, 25], // Adjust anchor point accordingly
+                            popupAnchor: [1, -22] // Adjust popup anchor accordingly
+                        })
                     }).addTo(map)
                     .bindPopup(`<strong>Stage ${stageIndex + 1} Start</strong>`);
                     
                     L.marker([endPoint[0], endPoint[1]], {
-                        title: `Stage ${stageIndex + 1} End`
+                        title: `Stage ${stageIndex + 1} End`,
+                        icon: L.icon({
+                            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                            iconSize: [15, 25], // Reduce from default [25, 41] to smaller size
+                            iconAnchor: [7, 25], // Adjust anchor point accordingly
+                            popupAnchor: [1, -22] // Adjust popup anchor accordingly
+                        })
                     }).addTo(map)
                     .bindPopup(`<strong>Stage ${stageIndex + 1} End</strong>`);
                 }
