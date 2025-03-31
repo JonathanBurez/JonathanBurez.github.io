@@ -971,7 +971,12 @@ async function initApp() {
                   <div id="last-update">Last updated: Not yet started</div>
         </div>
     `;
-    
+    // Inside the initApp function, after setting the infoPanel.innerHTML, add this line:
+    infoPanel.classList.add('info-panel-collapsed');
+
+    // And change the toggle text:
+    const toggle = document.querySelector('.info-panel-toggle');
+    toggle.textContent = '▲';
     // Add event listener for toggle
     document.querySelector('.info-panel-header').addEventListener('click', function() {
         const panel = document.getElementById('info-panel');
