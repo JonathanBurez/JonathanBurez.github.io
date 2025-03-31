@@ -32,6 +32,7 @@
             min-height: 60vh;
             position: relative;
         }
+        /* Add this to your existing styles */
         #info-panel {
             position: absolute;
             top: 300px;
@@ -42,6 +43,38 @@
             border-radius: 8px;
             z-index: 1000;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .info-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .info-panel-title {
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .info-panel-toggle {
+            font-size: 16px;
+        }
+
+        .info-panel-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .info-panel-collapsed .info-panel-content {
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        .info-panel-collapsed .info-panel-toggle {
+            transform: rotate(180deg);
         }
         #trip-stats {
             display: flex;
@@ -252,31 +285,52 @@
         <div id="map"></div>
         <div id="profileContainer"></div>
         <div id="info-panel">
-            <div id="trip-stats">
-                <div class="stat-box">
-                    <div class="stat-value" id="current-stage">0/11</div>
-                    <div class="stat-label">Current Stage</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="distance-traveled">0</div>
-                    <div class="stat-label">Kilometers</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="elevation-gain">0</div>
-                    <div class="stat-label">Meters Climbed</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="photos-shared">0</div>
-                    <div class="stat-label">Photos Shared</div>
-                </div>
-            </div>
-            <h2>Latest Photos</h2>
-            <div id="photo-gallery">
-                <!-- Photos will be added here dynamically -->
-            </div>
-            <div id="last-update">Last updated: Not yet started</div>
-        </div>
-    </div>
+          // Modify your info-panel HTML structure in the script
+          // Find the info-panel div in your HTML and modify it like this:
+          document.getElementById('info-panel').innerHTML = `
+              <div class="info-panel-header">
+                  <h3 class="info-panel-title">Trip Information</h3>
+                  <span class="info-panel-toggle">▼</span>
+              </div>
+              <div class="info-panel-content">
+                  <div id="trip-stats">
+                      <div class="stat-box">
+                          <div class="stat-value" id="current-stage">0/11</div>
+                          <div class="stat-label">Current Stage</div>
+                      </div>
+                      <div class="stat-box">
+                          <div class="stat-value" id="distance-traveled">0</div>
+                          <div class="stat-label">Kilometers</div>
+                      </div>
+                      <div class="stat-box">
+                          <div class="stat-value" id="elevation-gain">0</div>
+                          <div class="stat-label">Meters Climbed</div>
+                      </div>
+                      <div class="stat-box">
+                          <div class="stat-value" id="photos-shared">0</div>
+                          <div class="stat-label">Photos Shared</div>
+                      </div>
+                  </div>
+                  <h2>Latest Photos</h2>
+                  <div id="photo-gallery">
+                      <!-- Photos will be added here dynamically -->
+                  </div>
+                  <div id="last-update">Last updated: Not yet started</div>
+              </div>
+          `;
+          
+          // Add event listener for toggle
+          document.querySelector('.info-panel-header').addEventListener('click', function() {
+              const panel = document.getElementById('info-panel');
+              panel.classList.toggle('info-panel-collapsed');
+              
+              const toggle = document.querySelector('.info-panel-toggle');
+              if (panel.classList.contains('info-panel-collapsed')) {
+                  toggle.textContent = '▲';
+              } else {
+                  toggle.textContent = '▼';
+              }
+          });    </div>
 
     <div id="photo-modal">
         <span id="close-modal">&times;</span>
