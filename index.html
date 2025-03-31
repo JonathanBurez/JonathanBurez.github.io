@@ -329,6 +329,35 @@
         apiKey: key,
         style: 'https://api.maptiler.com/maps/ch-swisstopo-lbm/style.json', //optional
       }).addTo(map);
+
+      // Add this code after your map initialization but before loading data
+      // Create a north arrow control
+      L.Control.North = L.Control.extend({
+          onAdd: function(map) {
+              const div = L.DomUtil.create('div', 'leaflet-control-north');
+              div.innerHTML = '⬆️<br/>N';
+              div.style.backgroundColor = 'white';
+              div.style.padding = '5px 10px';
+              div.style.borderRadius = '4px';
+              div.style.boxShadow = '0 1px 5px rgba(0,0,0,0.65)';
+              div.style.cursor = 'default';
+              div.style.textAlign = 'center';
+              div.style.fontSize = '14px';
+              return div;
+          },
+          onRemove: function(map) {
+              // Nothing to do here
+          }
+      });
+
+      L.control.north = function(opts) {
+          return new L.Control.North(opts);
+      }
+
+      // Add the north control to the map
+      L.control.north({ position: 'topleft' }).addTo(map);
+
+
         // Variables to store trip data
         let currentPosition = null;
         let positionMarker = null;
