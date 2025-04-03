@@ -631,7 +631,7 @@
                 // Filter for image files only (jpg, png, etc.)
                 const imageFiles = data.entries.filter(entry => 
                     entry['.tag'] === 'file' && 
-                    /\.(jpg|jpeg|png|gif)$/i.test(entry.name)
+                    /\.(jpg|jpeg|png|gif|heic)$/i.test(entry.name)
                 );
                 
                 // For each image, get the metadata and download URL
