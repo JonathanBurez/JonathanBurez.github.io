@@ -385,7 +385,7 @@
 
         // When user needs to authenticate
         function initiateDropboxAuth() {
-            const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${DROPBOX_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(DROPBOX_REDIRECT_URI)}`;
+            const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${DROPBOX_CLIENT_ID}&response_type=code`;
             
             // Either redirect automatically
             window.location.href = authUrl;
