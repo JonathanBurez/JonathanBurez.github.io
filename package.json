@@ -1,0 +1,23 @@
+{
+  "name": "jonathanburez.github.io",
+  "version": "1.0.0",
+  "description": "This will be where I add what to do and how",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JonathanBurez/JonathanBurez.github.io.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JonathanBurez/JonathanBurez.github.io/issues"
+  },
+  "homepage": "https://github.com/JonathanBurez/JonathanBurez.github.io#readme",
+  "dependencies": {
+    "axios": "^1.8.4"
+  }
+}
