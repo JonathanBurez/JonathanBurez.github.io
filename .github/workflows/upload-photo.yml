@@ -1,0 +1,36 @@
+name: Upload Photo
+
+on:
+  repository_dispatch:
+    types: [photo-upload]
+
+jobs:
+  upload-photo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Create photos directory if needed
+        run: mkdir -p ${{ github.workspace }}/photos
+        
+      - name: Save image file
+        run: |
+          echo "${{ github.event.client_payload.imageData }}" | base64 -d > ${{ github.workspace }}/photos/${{ github.event.client_payload.filename }}
+        
+      - name: Create metadata file
+        run: |
+          echo '${{ toJSON(github.event.client_payload.metadata) }}' > ${{ github.workspace }}/photos/${{ github.event.client_payload.metadataFilename }}
+        
+      - name: Commit files
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add photos/${{ github.event.client_payload.filename }} photos/${{ github.event.client_payload.metadataFilename }}
+          git commit -m "Upload photo: ${{ github.event.client_payload.caption }}"
+          
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
