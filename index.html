@@ -848,6 +848,12 @@ function createElevationProfile(stageIndex) {
             }
         }
         
+        // Add this function and call it from your initApp() to test display
+        function addTestPhoto() {
+        const testUrl = "https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/main/Photos/IMG_0791.jpeg";
+        addPhoto(46.8182, 8.2275, testUrl, "Test Photo", new Date().toISOString());
+        console.log("Test photo added");
+        }
 // Modify initialization to wait for Chart.js
 async function initApp() {
     // First load Chart.js
@@ -912,6 +918,7 @@ async function initApp() {
     });
     // Inside initApp() function, add this line after setting up the info panel
     addPhotoUploadForm();
+    addTestPhoto();
 }
         
         // Start the application
