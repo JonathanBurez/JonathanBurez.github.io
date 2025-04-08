@@ -436,7 +436,7 @@
             uploadBtn.disabled = false;
             
             // Add photo to map
-            const imageUrl = `https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/${PHOTOS_PATH}/${filename}`;
+            const imageUrl = `https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/main/${PHOTOS_PATH}/${filename}`;
             addPhoto(location.lat, location.lon, imageUrl, metadata.caption, metadata.timestamp);
             
             alert('Photo uploaded successfully!');
