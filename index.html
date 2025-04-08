@@ -436,7 +436,7 @@
             uploadBtn.disabled = false;
             
             // Add photo to map
-            const imageUrl = `https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/main/${PHOTOS_PATH}/${filename}`;
+            const imageUrl = `https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/${PHOTOS_PATH}/${filename}`;
             addPhoto(location.lat, location.lon, imageUrl, metadata.caption, metadata.timestamp);
             
             alert('Photo uploaded successfully!');
@@ -457,7 +457,7 @@
             // First get the SHA of the file if it exists
             let sha = null;
             try {
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${PHOTOS_PATH}/${filename}`, {
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/${PHOTOS_PATH}/${filename}`, {
                 headers: {
                 'Authorization': `token ${GITHUB_TOKEN}`,
                 'Accept': 'application/vnd.github.v3+json'
@@ -472,7 +472,7 @@
             }
             
             // Now upload/update the file
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${PHOTOS_PATH}/${filename}`, {
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/${PHOTOS_PATH}/${filename}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `token ${GITHUB_TOKEN}`,
