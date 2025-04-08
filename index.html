@@ -344,10 +344,9 @@
             }
         }
 
-        // Replace the Dropbox API configuration section with this GitHub implementation
-        const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
-        const GITHUB_REPO = 'JonathanBurez/JonathanBurez.github.io';
-        const PHOTOS_PATH = 'Photos'; // Folder in your repo to store images
+        // Replace the GitHub implementation with Netlify Functions
+        // Keep track of your repository information for the serverless function
+        const PHOTOS_PATH = 'Photos'; // The folder in your repo where images are stored
 
         // Add this HTML to your page for the upload form
         function addPhotoUploadForm() {
@@ -362,11 +361,11 @@
         document.getElementById('info-panel').querySelector('.info-panel-content').appendChild(uploadForm);
         
         // Add event listener for the upload button
-        document.getElementById('upload-photo-btn').addEventListener('click', uploadPhotoToGitHub);
+        document.getElementById('upload-photo-btn').addEventListener('click', uploadPhotoToNetlify);
         }
 
-        // Function to upload photo to GitHub
-        async function uploadPhotoToGitHub() {
+        // Function to upload photo via Netlify Function
+        async function uploadPhotoToNetlify() {
         try {
             const fileInput = document.getElementById('photo-file');
             const captionInput = document.getElementById('photo-caption');
@@ -404,19 +403,31 @@
             const timestamp = new Date().getTime();
             const filename = `photo_${timestamp}.jpg`;
             
-            // Prepare metadata JSON
-            const metadataFilename = `photo_${timestamp}.json`;
+            // Prepare metadata
             const metadata = {
                 caption: captionInput.value || 'Photo from my trip',
                 timestamp: new Date().toISOString(),
-                location: location
+                location: location,
+                filename: filename
             };
             
-            // Upload image to GitHub
-            await uploadFileToGitHub(filename, imageData, 'Upload photo');
+            // Upload via Netlify Function
+            const response = await fetch('/.netlify/functions/upload-photo', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                imageData: imageData,
+                metadata: metadata
+                })
+            });
             
-            // Upload metadata
-            await uploadFileToGitHub(metadataFilename, JSON.stringify(metadata), 'Upload photo metadata');
+            if (!response.ok) {
+                throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+            }
+            
+            const result = await response.json();
             
             // Reset form
             fileInput.value = '';
@@ -425,7 +436,7 @@
             uploadBtn.disabled = false;
             
             // Add photo to map
-            const imageUrl = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${PHOTOS_PATH}/${filename}`;
+            const imageUrl = `https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/main/${PHOTOS_PATH}/${filename}`;
             addPhoto(location.lat, location.lon, imageUrl, metadata.caption, metadata.timestamp);
             
             alert('Photo uploaded successfully!');
