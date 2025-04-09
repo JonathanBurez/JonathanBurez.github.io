@@ -344,159 +344,6 @@
             }
         }
 
-        // Replace the GitHub implementation with Netlify Functions
-        // Keep track of your repository information for the serverless function
-        const PHOTOS_PATH = 'Photos'; // The folder in your repo where images are stored
-
-        // Add this HTML to your page for the upload form
-        function addPhotoUploadForm() {
-        const uploadForm = document.createElement('div');
-        uploadForm.className = 'photo-upload-form';
-        uploadForm.innerHTML = `
-            <h3>Upload a Photo</h3>
-            <input type="file" id="photo-file" accept="image/*" />
-            <input type="text" id="photo-caption" placeholder="Caption" />
-            <button id="upload-photo-btn">Upload</button>
-        `;
-        document.getElementById('info-panel').querySelector('.info-panel-content').appendChild(uploadForm);
-        
-        // Add event listener for the upload button
-        document.getElementById('upload-photo-btn').addEventListener('click', uploadPhotoToNetlify);
-        }
-
-        // Function to upload photo via Netlify Function
-        async function uploadPhotoToNetlify() {
-        try {
-            const fileInput = document.getElementById('photo-file');
-            const captionInput = document.getElementById('photo-caption');
-            
-            if (!fileInput.files[0]) {
-            alert('Please select a photo to upload');
-            return;
-            }
-            
-            // Show loading indicator
-            const uploadBtn = document.getElementById('upload-photo-btn');
-            const originalText = uploadBtn.textContent;
-            uploadBtn.textContent = 'Uploading...';
-            uploadBtn.disabled = true;
-            
-            // Read the file
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            
-            reader.onload = async function(e) {
-            // Get the image data
-            const imageData = e.target.result.split(',')[1]; // Base64 data
-            
-            // Extract location from EXIF if available
-            const location = await extractLocationFromImage(file);
-            
-            if (!location) {
-                alert('No location data found in image. Please use an image with GPS data.');
-                uploadBtn.textContent = originalText;
-                uploadBtn.disabled = false;
-                return;
-            }
-            
-            // Generate a unique filename
-            const timestamp = new Date().getTime();
-            const filename = `photo_${timestamp}.jpg`;
-            
-            // Prepare metadata
-            const metadata = {
-                caption: captionInput.value || 'Photo from my trip',
-                timestamp: new Date().toISOString(),
-                location: location,
-                filename: filename
-            };
-            
-            // Upload via Netlify Function
-            const response = await fetch('/.netlify/functions/upload-photo', {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                imageData: imageData,
-                metadata: metadata
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
-            }
-            
-            const result = await response.json();
-            
-            // Reset form
-            fileInput.value = '';
-            captionInput.value = '';
-            uploadBtn.textContent = originalText;
-            uploadBtn.disabled = false;
-            
-            // Add photo to map
-            const imageUrl = `https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/main/${PHOTOS_PATH}/${filename}`;
-            addPhoto(location.lat, location.lon, imageUrl, metadata.caption, metadata.timestamp);
-            
-            alert('Photo uploaded successfully!');
-            };
-            
-            reader.readAsDataURL(file);
-        } catch (error) {
-            console.error('Error uploading photo:', error);
-            alert('Failed to upload photo. Please try again.');
-            document.getElementById('upload-photo-btn').textContent = 'Upload';
-            document.getElementById('upload-photo-btn').disabled = false;
-        }
-        }
-
-        // Helper function to upload a file to GitHub
-        async function uploadFileToGitHub(filename, content, commitMessage) {
-        try {
-            // First get the SHA of the file if it exists
-            let sha = null;
-            try {
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/main/${PHOTOS_PATH}/${filename}`, {
-                headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                sha = data.sha;
-            }
-            } catch (e) {
-            // File doesn't exist yet, which is fine
-            }
-            
-            // Now upload/update the file
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/main/${PHOTOS_PATH}/${filename}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify({
-                message: commitMessage,
-                content: content,
-                sha: sha
-            })
-            });
-            
-            if (!response.ok) {
-            throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
-            }
-            
-            return await response.json();
-        } catch (error) {
-            console.error('Error uploading to GitHub:', error);
-            throw error;
-        }
-        }
- //
         // Helper function to extract location from image
         async function extractLocationFromImage(file) {
         return new Promise((resolve) => {
@@ -663,142 +510,143 @@
             document.getElementById('photo-modal').style.display = 'none';
         });
 
-// Function to create elevation profile for a stage
-function createElevationProfile(stageIndex) {
-    if (!routes.stages[stageIndex]) return;
-    
-    const profileContainer = document.getElementById('profileContainer');
-    profileContainer.innerHTML = '';
-    
-    // Create canvas for the chart
-    const canvas = document.createElement('canvas');
-    canvas.id = 'elevationChart';
-    profileContainer.appendChild(canvas);
-    
-    // Extract elevation data from stage
-    const stage = routes.stages[stageIndex];
-    const elevationData = stage.points.map((point, index) => {
-        // Calculate distance from start for each point
-        let distanceFromStart = 0;
-        if (index > 0) {
-            for (let i = 1; i <= index; i++) {
-                const prevPoint = L.latLng(stage.points[i-1][0], stage.points[i-1][1]);
-                const currPoint = L.latLng(stage.points[i][0], stage.points[i][1]);
-                distanceFromStart += prevPoint.distanceTo(currPoint);
+
+        // Function to create elevation profile for a stage
+        function createElevationProfile(stageIndex) {
+            if (!routes.stages[stageIndex]) return;
+            
+            const profileContainer = document.getElementById('profileContainer');
+            profileContainer.innerHTML = '';
+            
+            // Create canvas for the chart
+            const canvas = document.createElement('canvas');
+            canvas.id = 'elevationChart';
+            profileContainer.appendChild(canvas);
+            
+            // Extract elevation data from stage
+            const stage = routes.stages[stageIndex];
+            const elevationData = stage.points.map((point, index) => {
+                // Calculate distance from start for each point
+                let distanceFromStart = 0;
+                if (index > 0) {
+                    for (let i = 1; i <= index; i++) {
+                        const prevPoint = L.latLng(stage.points[i-1][0], stage.points[i-1][1]);
+                        const currPoint = L.latLng(stage.points[i][0], stage.points[i][1]);
+                        distanceFromStart += prevPoint.distanceTo(currPoint);
+                    }
+                }
+                
+                return {
+                    distance: distanceFromStart / 1000, // km
+                    elevation: point[2],
+                    lat: point[0],
+                    lon: point[1],
+                    index: index
+                };
+            });
+
+            // Create position marker for hovering
+            const hoverMarker = L.circleMarker([0, 0], {
+                radius: 8,
+                color: '#ff0000',
+                fillColor: '#ff0000',
+                fillOpacity: 0.5,
+                weight: 2
+            });
+            
+            // Create chart
+            if (window.Chart) {
+                const ctx = document.getElementById('elevationChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: [{
+                            label: `Elevation Profile - Stage ${stageIndex + 1}`,
+                            data: elevationData,
+                            borderColor: stageColors[stageIndex],
+                            backgroundColor: `${stageColors[stageIndex]}80`,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: true // Enable fill under the line
+                        }]
+                    },
+                    // Inside the createElevationProfile function, modify the options section of the Chart configuration:
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        parsing: {
+                            xAxisKey: 'distance',
+                            yAxisKey: 'elevation'
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                title: {
+                                    display: true,
+                                    text: 'Distance (km)'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Elevation (m)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false // Hide the legend
+                            },
+                            title: {
+                                display: true,
+                                text: `Elevation Profile - Stage ${stageIndex + 1}`
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                displayColors: false, // This removes the colored box
+                                callbacks: {
+                                    title: function(context) {
+                                    return `Distance: ${context[0].raw.distance.toFixed(1)} km\nElevation: ${context[0].raw.elevation.toFixed(0)} m`;
+                                    },
+                                    label: function(context) {
+                                    return ``;
+                                    }
+                                }
+                            }
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                });
+                            
+                // Add mouse event listeners to handle hover
+                canvas.addEventListener('mousemove', function(event) {
+                    const points = chart.getElementsAtEventForMode(event, 'index', { intersect: false });
+                    if (points.length > 0) {
+                        const dataIndex = points[0].index;
+                        const pointData = elevationData[dataIndex];
+                        
+                        // Update marker position
+                        hoverMarker.setLatLng([pointData.lat, pointData.lon]);
+                        
+                        // Add marker to map if not already added
+                        if (!map.hasLayer(hoverMarker)) {
+                            hoverMarker.addTo(map);
+                        }
+                    }
+                });
+                            
+                // Remove marker when mouse leaves the chart
+                canvas.addEventListener('mouseout', function() {
+                    if (map.hasLayer(hoverMarker)) {
+                        map.removeLayer(hoverMarker);
+                    }
+                });
             }
         }
-        
-        return {
-            distance: distanceFromStart / 1000, // km
-            elevation: point[2],
-            lat: point[0],
-            lon: point[1],
-            index: index
-        };
-    });
-
-    // Create position marker for hovering
-    const hoverMarker = L.circleMarker([0, 0], {
-        radius: 8,
-        color: '#ff0000',
-        fillColor: '#ff0000',
-        fillOpacity: 0.5,
-        weight: 2
-    });
-    
-    // Create chart
-    if (window.Chart) {
-        const ctx = document.getElementById('elevationChart').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                datasets: [{
-                    label: `Elevation Profile - Stage ${stageIndex + 1}`,
-                    data: elevationData,
-                    borderColor: stageColors[stageIndex],
-                    backgroundColor: `${stageColors[stageIndex]}80`,
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: true // Enable fill under the line
-                }]
-            },
- // Inside the createElevationProfile function, modify the options section of the Chart configuration:
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                parsing: {
-                    xAxisKey: 'distance',
-                    yAxisKey: 'elevation'
-                },
-                scales: {
-                    x: {
-                        type: 'linear',
-                        title: {
-                            display: true,
-                            text: 'Distance (km)'
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Elevation (m)'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false // Hide the legend
-                    },
-                    title: {
-                        display: true,
-                        text: `Elevation Profile - Stage ${stageIndex + 1}`
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        displayColors: false, // This removes the colored box
-                        callbacks: {
-                            title: function(context) {
-                              return `Distance: ${context[0].raw.distance.toFixed(1)} km\nElevation: ${context[0].raw.elevation.toFixed(0)} m`;
-                            },
-                            label: function(context) {
-                              return ``;
-                            }
-                        }
-                    }
-                },
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                }
-            }
-                    });
-                    
-                    // Add mouse event listeners to handle hover
-                    canvas.addEventListener('mousemove', function(event) {
-                        const points = chart.getElementsAtEventForMode(event, 'index', { intersect: false });
-                        if (points.length > 0) {
-                            const dataIndex = points[0].index;
-                            const pointData = elevationData[dataIndex];
-                            
-                            // Update marker position
-                            hoverMarker.setLatLng([pointData.lat, pointData.lon]);
-                            
-                            // Add marker to map if not already added
-                            if (!map.hasLayer(hoverMarker)) {
-                                hoverMarker.addTo(map);
-                            }
-                        }
-                    });
-                    
-                    // Remove marker when mouse leaves the chart
-                    canvas.addEventListener('mouseout', function() {
-                        if (map.hasLayer(hoverMarker)) {
-                            map.removeLayer(hoverMarker);
-                        }
-                    });
-                }
-            }
 
         // Load GPX files - replace these URLs with your actual GPX files
         async function loadGPXFiles() {
@@ -847,7 +695,13 @@ function createElevationProfile(stageIndex) {
                 console.error('Error fetching Spot data:', error);
             }
         }
-        
+
+        // Add this function and call it from your initApp() to test display
+        function addTestPhoto() {
+            const testUrl = "https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/main/Photos/IMG_0791.jpg";
+            addPhoto(46.8182, 8.2275, testUrl, "Test Photo", new Date().toISOString());
+            console.log("Test photo added");
+        }
 // Modify initialization to wait for Chart.js
 async function initApp() {
     // First load Chart.js
@@ -910,8 +764,6 @@ async function initApp() {
             toggle.textContent = '▼';
         }
     });
-    // Inside initApp() function, add this line after setting up the info panel
-    addPhotoUploadForm();
 }
         
         // Start the application
