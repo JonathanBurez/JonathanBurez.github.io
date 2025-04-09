@@ -698,81 +698,101 @@
             }
         }
 
-        // Replace your addTestPhoto function with this one
+
         function addTestPhoto() {
-            // Create a file input element programmatically
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = 'image/*';
-            
-            // Add event listener for when a file is selected
-            fileInput.addEventListener('change', async function(event) {
-                if (event.target.files.length > 0) {
-                    const file = event.target.files[0];
+            // Hardcoded list of Dropbox links with raw=1 parameter
+            const photoUrls = [
+                "https://www.dropbox.com/scl/fi/uy0byx81rzef02ep2a8jo/2025-04-03-16.55.09.heic?rlkey=7ygsboc0ryox8li3wtjrve7so&st=wj44pmvi&raw=1",
+                "https://www.dropbox.com/scl/fi/8n6e76aslt7vo33k7lamh/2025-04-03-18.42.35.heic?rlkey=ngoot2jmaz73r8ufo5273vp7e&st=hidrehpf&raw=1",
+                "https://www.dropbox.com/scl/fi/4gg1zlqow0kdcd7h2qj26/2025-04-04-07.25.55.png?rlkey=wvh6lfinpf21aqd7k78qjl1al&st=6uigh12c&raw=1"
+            ];
+
+            // Process each Dropbox URL
+            photoUrls.forEach((url, index) => {
+                // Load the image and extract metadata
+                const img = new Image();
+                
+                img.onload = function() {
+                    console.log(`Image ${index+1} loaded successfully`);
                     
-                    // Create URL for the selected image
-                    const imageUrl = URL.createObjectURL(file);
-                    
-                    // Try to extract location from image
-                    const img = new Image();
-                    img.onload = function() {
-                        EXIF.getData(img, function() {
-                            let lat = null;
-                            let lon = null;
-                            let timestamp = new Date().toISOString();
+                    // Use EXIF.js to extract metadata
+                    EXIF.getData(this, function() {
+                        let lat = null;
+                        let lon = null;
+                        let timestamp = new Date().toISOString();
+                        let caption = `Photo ${index+1}`;
+                        
+                        // Try to extract GPS coordinates
+                        if (EXIF.getTag(this, "GPSLatitude") && EXIF.getTag(this, "GPSLongitude")) {
+                            const latDMS = EXIF.getTag(this, "GPSLatitude");
+                            const lonDMS = EXIF.getTag(this, "GPSLongitude");
+                            const latRef = EXIF.getTag(this, "GPSLatitudeRef") || "N";
+                            const lonRef = EXIF.getTag(this, "GPSLongitudeRef") || "E";
                             
-                            // Try to extract GPS coordinates
-                            if (EXIF.getTag(this, "GPSLatitude") && EXIF.getTag(this, "GPSLongitude")) {
-                                const latDMS = EXIF.getTag(this, "GPSLatitude");
-                                const lonDMS = EXIF.getTag(this, "GPSLongitude");
-                                const latRef = EXIF.getTag(this, "GPSLatitudeRef") || "N";
-                                const lonRef = EXIF.getTag(this, "GPSLongitudeRef") || "E";
+                            // Convert DMS to decimal degrees
+                            lat = convertDMSToDD(latDMS, latRef);
+                            lon = convertDMSToDD(lonDMS, lonRef);
+                            console.log(`Extracted coordinates: ${lat}, ${lon}`);
+                        }
+                        
+                        // Try to extract timestamp
+                        if (EXIF.getTag(this, "DateTimeOriginal")) {
+                            const dateStr = EXIF.getTag(this, "DateTimeOriginal");
+                            // Convert EXIF date format (YYYY:MM:DD HH:MM:SS) to ISO format
+                            const parts = dateStr.split(' ');
+                            const dateParts = parts[0].split(':');
+                            const timeParts = parts[1].split(':');
+                            const dateObj = new Date(
+                                dateParts[0], 
+                                dateParts[1] - 1, // Month is 0-indexed
+                                dateParts[2], 
+                                timeParts[0], 
+                                timeParts[1], 
+                                timeParts[2]
+                            );
+                            timestamp = dateObj.toISOString();
+                            console.log(`Extracted timestamp: ${timestamp}`);
+                        }
+                        
+                        // Try to get location from filename if EXIF data is missing
+                        if (lat === null || lon === null) {
+                            const filenameParts = url.split('/').pop().split('_');
+                            if (filenameParts.length >= 4) {
+                                // Check if the filename contains coordinates in format YYYY-MM-DD_HH-MM-SS_LAT_LON.jpg
+                                const possibleLat = parseFloat(filenameParts[filenameParts.length - 2]);
+                                const possibleLon = parseFloat(filenameParts[filenameParts.length - 1].split('.')[0]);
                                 
-                                // Convert DMS to decimal degrees
-                                lat = convertDMSToDD(latDMS, latRef);
-                                lon = convertDMSToDD(lonDMS, lonRef);
+                                if (!isNaN(possibleLat) && !isNaN(possibleLon)) {
+                                    lat = possibleLat;
+                                    lon = possibleLon;
+                                    console.log(`Extracted coordinates from filename: ${lat}, ${lon}`);
+                                }
                             }
-                            
-                            // Try to extract timestamp
-                            if (EXIF.getTag(this, "DateTimeOriginal")) {
-                                const dateStr = EXIF.getTag(this, "DateTimeOriginal");
-                                // Convert EXIF date format (YYYY:MM:DD HH:MM:SS) to ISO format
-                                const parts = dateStr.split(' ');
-                                const dateParts = parts[0].split(':');
-                                const timeParts = parts[1].split(':');
-                                const dateObj = new Date(
-                                    dateParts[0], 
-                                    dateParts[1] - 1, // Month is 0-indexed
-                                    dateParts[2], 
-                                    timeParts[0], 
-                                    timeParts[1], 
-                                    timeParts[2]
-                                );
-                                timestamp = dateObj.toISOString();
-                            }
-                            
-                            // If no GPS data found, use default coordinates
-                            if (lat === null || lon === null) {
-                                lat = 46.8182;
-                                lon = 8.2275;
-                                console.log("No GPS data found in image, using default location");
-                            }
-                            
-                            // Add the photo to the map
-                            addPhoto(lat, lon, imageUrl, file.name, timestamp);
-                            console.log("Photo added with extracted data:", { lat, lon, timestamp });
-                        });
-                    };
-                    
-                    img.src = imageUrl;
-                }
+                        }
+                        
+                        // If still no coordinates, use default location
+                        if (lat === null || lon === null) {
+                            lat = 46.8182;
+                            lon = 8.2275;
+                            console.log("No location data found, using default coordinates");
+                        }
+                        
+                        // Add the photo to the map with extracted metadata
+                        addPhoto(lat, lon, url, caption, timestamp);
+                    });
+                };
+                
+                img.onerror = function() {
+                    console.error(`Failed to load image: ${url}`);
+                };
+                
+                // Cross-origin issues can prevent reading EXIF data
+                img.crossOrigin = "Anonymous";
+                img.src = url;
             });
-            
-            // Trigger the file selection dialog
-            fileInput.click();
         }
 
-        // Add the conversion function for GPS coordinates
+        // Add the conversion function for GPS coordinates if not already present
         function convertDMSToDD(dms, ref) {
             const degrees = dms[0];
             const minutes = dms[1];
