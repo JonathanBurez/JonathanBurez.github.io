@@ -10,6 +10,8 @@
     <link href="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.css" rel="stylesheet" />
     <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v4.0.2/leaflet-maptilersdk.umd.min.js"></script>
     <link rel="stylesheet" href="Styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+
 </head>
 <body>
     <div id="container">
@@ -696,13 +698,96 @@
             }
         }
 
-        // Add this function and call it from your initApp() to test display
+        // Replace your addTestPhoto function with this one
         function addTestPhoto() {
+            // Create a file input element programmatically
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
             
-            const testUrl = "https://www.dropbox.com/scl/fi/jyef6ze37gm9r2m9pmri0/2025-04-02_14-30-00_46.8182_8.2275.jpg?rlkey=we8t71l4asqc785cr7ryq57qb&st=135t7xzv&raw=1"
-                       addPhoto(46.8182, 8.2275, testUrl, "Dropbox v5 Photo", new Date().toISOString());
-            console.log("Test photo added");
+            // Add event listener for when a file is selected
+            fileInput.addEventListener('change', async function(event) {
+                if (event.target.files.length > 0) {
+                    const file = event.target.files[0];
+                    
+                    // Create URL for the selected image
+                    const imageUrl = URL.createObjectURL(file);
+                    
+                    // Try to extract location from image
+                    const img = new Image();
+                    img.onload = function() {
+                        EXIF.getData(img, function() {
+                            let lat = null;
+                            let lon = null;
+                            let timestamp = new Date().toISOString();
+                            
+                            // Try to extract GPS coordinates
+                            if (EXIF.getTag(this, "GPSLatitude") && EXIF.getTag(this, "GPSLongitude")) {
+                                const latDMS = EXIF.getTag(this, "GPSLatitude");
+                                const lonDMS = EXIF.getTag(this, "GPSLongitude");
+                                const latRef = EXIF.getTag(this, "GPSLatitudeRef") || "N";
+                                const lonRef = EXIF.getTag(this, "GPSLongitudeRef") || "E";
+                                
+                                // Convert DMS to decimal degrees
+                                lat = convertDMSToDD(latDMS, latRef);
+                                lon = convertDMSToDD(lonDMS, lonRef);
+                            }
+                            
+                            // Try to extract timestamp
+                            if (EXIF.getTag(this, "DateTimeOriginal")) {
+                                const dateStr = EXIF.getTag(this, "DateTimeOriginal");
+                                // Convert EXIF date format (YYYY:MM:DD HH:MM:SS) to ISO format
+                                const parts = dateStr.split(' ');
+                                const dateParts = parts[0].split(':');
+                                const timeParts = parts[1].split(':');
+                                const dateObj = new Date(
+                                    dateParts[0], 
+                                    dateParts[1] - 1, // Month is 0-indexed
+                                    dateParts[2], 
+                                    timeParts[0], 
+                                    timeParts[1], 
+                                    timeParts[2]
+                                );
+                                timestamp = dateObj.toISOString();
+                            }
+                            
+                            // If no GPS data found, use default coordinates
+                            if (lat === null || lon === null) {
+                                lat = 46.8182;
+                                lon = 8.2275;
+                                console.log("No GPS data found in image, using default location");
+                            }
+                            
+                            // Add the photo to the map
+                            addPhoto(lat, lon, imageUrl, file.name, timestamp);
+                            console.log("Photo added with extracted data:", { lat, lon, timestamp });
+                        });
+                    };
+                    
+                    img.src = imageUrl;
+                }
+            });
+            
+            // Trigger the file selection dialog
+            fileInput.click();
         }
+
+        // Add the conversion function for GPS coordinates
+        function convertDMSToDD(dms, ref) {
+            const degrees = dms[0];
+            const minutes = dms[1];
+            const seconds = dms[2];
+            
+            let dd = degrees + minutes/60 + seconds/3600;
+            
+            // If ref is S or W, negate the value
+            if (ref === 'S' || ref === 'W') {
+                dd = -dd;
+            }
+            
+            return dd;
+        }
+
 // Modify initialization to wait for Chart.js
 async function initApp() {
     // First load Chart.js
