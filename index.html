@@ -750,8 +750,13 @@ function extractMetadataFromUrl(url) {
         // Extract coordinates
         try {
             lat = parseFloat(parts[2]);
-            lon = parseFloat(parts[3].split('.')[0]); // Remove file extension
-            
+            // Extract longitude, preserving decimal points but removing file extension
+            const lonPart = parts[3];
+            // Find where the file extension starts (after last period)
+            const lastDotIndex = lonPart.lastIndexOf('.');
+            // If there's a file extension, remove it, otherwise use the whole string
+            lon = parseFloat(lastDotIndex > 0 ? lonPart.substring(0, lastDotIndex) : lonPart);            
+
             // Create timestamp
             const dateParts = dateStr.split('-');
             const timeParts = timeStr.split(':');
