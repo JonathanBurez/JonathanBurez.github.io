@@ -698,89 +698,83 @@
             }
         }
 
-//                  "https://www.dropbox.com/scl/fi/uy0byx81rzef02ep2a8jo/2025-04-03-16.55.09.heic?rlkey=7ygsboc0ryox8li3wtjrve7so&st=wj44pmvi&raw=1",
-//                  "https://www.dropbox.com/scl/fi/8n6e76aslt7vo33k7lamh/2025-04-03-18.42.35.heic?rlkey=ngoot2jmaz73r8ufo5273vp7e&st=hidrehpf&raw=1"
  
-// Replace your addTestPhoto function with this version
-function addTestPhoto() {
-    // Hardcoded list of photo information
-    // Format: [URL, lat, lon, caption, timestamp]
-    const photoData = [
-        // Each photo with its metadata - using raw=1 in Dropbox URLs
-        {
-            url: "https://www.dropbox.com/scl/fi/jyef6ze37gm9r2m9pmri0/2025-04-02_14-30-00_46.8182_8.2275.jpg?rlkey=we8t71l4asqc785cr7ryq57qb&st=s59vpnfn&raw=1",
-            url: "https://www.dropbox.com/scl/fi/8f104bedi9f09blz6zml2/2025-04-08_19-28-00_50.83018_3.62887.jpg?rlkey=0eap4gmcnocfxmab0aogudjck&st=cvok7h28&raw=1",
-            // Extract coordinates and date from filename pattern
-            get metadata() {
-                // Parse the filename from the URL
-                const filename = this.url.split('/').pop().split('?')[0];
-                let lat = 46.8182; // Default coordinates
-                let lon = 8.2275;
-                let timestamp = new Date().toISOString();
-                
-                // Try to extract data from filename
-                // Expected format: YYYY-MM-DD_HH-MM-SS_LAT_LON.jpg
-                const parts = filename.split('_');
-                if (parts.length >= 4) {
-                    // Extract date and time
-                    const dateStr = parts[0];
-                    const timeStr = parts[1].replace(/-/g, ':');
-                    
-                    // Extract coordinates
-                    try {
-                        lat = parseFloat(parts[2]);
-                        lon = parseFloat(parts[3].split('.')[0]);
-                        
-                        // Create timestamp
-                        const dateParts = dateStr.split('-');
-                        const timeParts = timeStr.split(':');
-                        const dateObj = new Date(
-                            parseInt(dateParts[0]), 
-                            parseInt(dateParts[1]) - 1, // Month is 0-indexed
-                            parseInt(dateParts[2]), 
-                            parseInt(timeParts[0]), 
-                            parseInt(timeParts[1]), 
-                            parseInt(timeParts[2] || 0)
-                        );
-                        timestamp = dateObj.toISOString();
-                    } catch (e) {
-                        console.warn("Could not parse coordinates or timestamp from filename:", e);
-                    }
-                }
-                
-                return {
-                    lat: lat,
-                    lon: lon,
-                    timestamp: timestamp,
-                    caption: `Photo taken on ${new Date(timestamp).toLocaleDateString()} at ${new Date(timestamp).toLocaleTimeString()}`
-                };
-            }
-        },
-        // Add more photos as needed following the same pattern
+        function addTestPhoto() {
+    // Add your photo URLs here in the future
+    const photoUrls = [
+        "https://www.dropbox.com/scl/fi/jyef6ze37gm9r2m9pmri0/2025-04-02_14-30-00_46.8182_8.2275.jpg?rlkey=we8t71l4asqc785cr7ryq57qb&st=s59vpnfn&raw=1",
+        "https://www.dropbox.com/scl/fi/8f104bedi9f09blz6zml2/2025-04-08_19-28-00_50.83018_3.62887.jpg?rlkey=0eap4gmcnocfxmab0aogudjck&st=cvok7h28&raw=1"
+        // Add more URLs here when needed
     ];
 
     // Process each photo
-    photoData.forEach((photo, index) => {
-        const metadata = photo.metadata;
+    photoUrls.forEach((url, index) => {
+        // Extract metadata from filename
+        const metadata = extractMetadataFromUrl(url);
         console.log(`Adding photo ${index+1} at coordinates: ${metadata.lat}, ${metadata.lon}`);
         
         // Add to map with extracted metadata
         addPhoto(
             metadata.lat,
             metadata.lon,
-            photo.url,
+            url,
             metadata.caption,
             metadata.timestamp
         );
     });
     
     // If no photos in the list, use a placeholder
-    if (photoData.length === 0) {
+    if (photoUrls.length === 0) {
         console.log("No photos in list, using placeholder");
         addPhoto(46.8182, 8.2275, "/api/placeholder/400/300", "Placeholder Image", new Date().toISOString());
     }
 }
 
+// Helper function to extract metadata from URL
+function extractMetadataFromUrl(url) {
+    // Parse the filename from the URL
+    const filename = url.split('/').pop().split('?')[0];
+    let lat = 46.8182; // Default coordinates
+    let lon = 8.2275;
+    let timestamp = new Date().toISOString();
+    
+    // Try to extract data from filename
+    // Expected format: YYYY-MM-DD_HH-MM-SS_LAT_LON.jpg
+    const parts = filename.split('_');
+    if (parts.length >= 4) {
+        // Extract date and time
+        const dateStr = parts[0];
+        const timeStr = parts[1].replace(/-/g, ':');
+        
+        // Extract coordinates
+        try {
+            lat = parseFloat(parts[2]);
+            lon = parseFloat(parts[3].split('.')[0]); // Remove file extension
+            
+            // Create timestamp
+            const dateParts = dateStr.split('-');
+            const timeParts = timeStr.split(':');
+            const dateObj = new Date(
+                parseInt(dateParts[0]), 
+                parseInt(dateParts[1]) - 1, // Month is 0-indexed
+                parseInt(dateParts[2]), 
+                parseInt(timeParts[0]), 
+                parseInt(timeParts[1]), 
+                parseInt(timeParts[2] || 0)
+            );
+            timestamp = dateObj.toISOString();
+        } catch (e) {
+            console.warn("Could not parse coordinates or timestamp from filename:", e);
+        }
+    }
+    
+    return {
+        lat: lat,
+        lon: lon,
+        timestamp: timestamp,
+        caption: `Photo taken on ${new Date(timestamp).toLocaleDateString()} at ${new Date(timestamp).toLocaleTimeString()}`
+    };
+}
 
 // Modify initialization to wait for Chart.js
 async function initApp() {
