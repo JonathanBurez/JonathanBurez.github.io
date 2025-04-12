@@ -398,6 +398,48 @@
             
             // Determine current stage based on position
             determineCurrentStage(lat, lon);
+            // Update position on elevation chart if it exists and we're on a specific stage
+            const chart = Chart.getChart('elevationChart');
+            if (chart && routes.current !== -1) {
+                // Find closest point on the route to the current position
+                const currentPoint = L.latLng(lat, lon);
+                const stagePoints = routes.stages[routes.current].points;
+                let closestIndex = 0;
+                let minDistance = Infinity;
+                
+                for (let i = 0; i < stagePoints.length; i++) {
+                    const routePoint = L.latLng(stagePoints[i][0], stagePoints[i][1]);
+                    const distance = currentPoint.distanceTo(routePoint);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestIndex = i;
+                    }
+                }
+                
+                // If we don't already have a position marker on the chart, create one
+                if (!chart.data.datasets[1]) {
+                    chart.data.datasets.push({
+                        label: 'Current Position',
+                        data: [{
+                            distance: elevationData[closestIndex].distance,
+                            elevation: elevationData[closestIndex].elevation
+                        }],
+                        borderColor: '#ff0000',
+                        backgroundColor: '#ff0000',
+                        borderWidth: 2,
+                        pointRadius: 8,
+                        pointHoverRadius: 10,
+                        fill: false
+                    });
+                } else {
+                    // Update position marker
+                    chart.data.datasets[1].data = [{
+                        distance: elevationData[closestIndex].distance,
+                        elevation: elevationData[closestIndex].elevation
+                    }];
+                }
+                chart.update();
+            }
         }
         
         // Determine which stage the cyclist is currently on
