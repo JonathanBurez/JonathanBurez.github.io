@@ -362,8 +362,13 @@
                 const profileContainer = document.getElementById('profileContainer');
                 profileContainer.innerHTML = '';
                 
-                // Check for Strava ID first
-                if (routes.stravaIds && routes.stravaIds[stageIndex]) {
+                // Debug logging
+                console.log("routes.stravaIds:", routes.stravaIds);
+                console.log(`Checking for Strava ID for stage ${stageIndex}`);
+                console.log(`Strava ID found:`, routes.stravaIds[stageIndex]);
+                
+                // Check for Strava ID with more explicit condition
+                if (routes.stravaIds && routes.stravaIds[stageIndex] && routes.stravaIds[stageIndex].length > 0) {
                     // If there's a Strava ID, embed it
                     console.log(`Using Strava embed for stage ${stageIndex + 1}, ID: ${routes.stravaIds[stageIndex]}`);
                     embedStravaActivity(stageIndex, routes.stravaIds[stageIndex]);
@@ -999,11 +1004,11 @@ async function getCurrentWeather() {
 
 // Modify initialization to wait for Chart.js
 async function initApp() {
-    // First load Chart.js
-    await loadChartJS();
-
     // Register Strava activities
     registerStravaActivities();
+    
+    // First load Chart.js
+    await loadChartJS();
 
     // Then load GPX routes
     await loadGPXFiles();
