@@ -1001,31 +1001,33 @@ function embedStravaActivity(stageIndex, stravaId) {
     // Clear it again just to be safe
     profileContainer.innerHTML = '';
     
-    // Use Strava's official HTML5 embed code
-    const stravaEmbed = document.createElement('div');
-    stravaEmbed.className = 'strava-activity-embed';
-    stravaEmbed.innerHTML = `
-        <script src="https://strava-embeds.com/embed.js"></script>
-        <div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}" data-style="standard">
+    // Create a container with proper structure for Strava embed
+    const stravaContainer = document.createElement('div');
+    stravaContainer.className = 'strava-embed-wrapper';
+    profileContainer.appendChild(stravaContainer);
+    
+    // Add the placeholder directly
+    stravaContainer.innerHTML = `
+        <div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}">
             <a href="https://www.strava.com/activities/${stravaId}" target="_blank">
                 View activity on Strava
             </a>
         </div>
     `;
     
-    profileContainer.appendChild(stravaEmbed);
-    
-    // Force script execution (sometimes necessary when dynamically adding script tags)
-    const scripts = stravaEmbed.getElementsByTagName('script');
-    for (let i = 0; i < scripts.length; i++) {
-        const oldScript = scripts[i];
-        const newScript = document.createElement('script');
-        newScript.src = oldScript.src;
-        newScript.textContent = oldScript.textContent;
-        oldScript.parentNode.replaceChild(newScript, oldScript);
-    }
-    
-    console.log("Strava embed added to DOM");
+    // Load the script separately after the DOM is set up
+    setTimeout(() => {
+        // Remove any existing Strava script to avoid duplicates
+        const existingScripts = document.querySelectorAll('script[src*="strava-embeds.com"]');
+        existingScripts.forEach(script => script.remove());
+        
+        // Add the script freshly
+        const script = document.createElement('script');
+        script.src = 'https://strava-embeds.com/embed.js';
+        document.body.appendChild(script);
+        
+        console.log("Strava embed script added to DOM");
+    }, 100);
 }
 
 function checkStravaStatus() {
