@@ -110,11 +110,12 @@
             '#1f968b', // donker teal
             '#f46d43'  // warm koraal
         ];
-        
+
         // Store all route data
         const routes = {
             stages: [],
             current: 0
+            stravaIds: {}  // Initialize this object early
         };
         
         // Create a foldable legend
@@ -1007,11 +1008,11 @@ async function initApp() {
     // First load Chart.js
     await loadChartJS();
 
-    // Then load GPX routes
-    await loadGPXFiles();
-    
     // Register Strava activities
     registerStravaActivities();
+
+    // Then load GPX routes
+    await loadGPXFiles();
 
     // Add the info panel header and toggle functionality
     const infoPanel = document.getElementById('info-panel');
