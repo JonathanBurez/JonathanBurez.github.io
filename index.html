@@ -1001,20 +1001,26 @@ function embedStravaActivity(stageIndex, stravaId) {
     // Clear it again just to be safe
     profileContainer.innerHTML = '';
     
-    // Create the iframe
-    const iframe = document.createElement('iframe');
-    iframe.frameBorder = '0';
-    iframe.allowTransparency = true;
-    iframe.scrolling = 'no';
-    iframe.width = '100%';
-    iframe.height = '405px';
-    iframe.src = `https://www.strava.com/activities/${stravaId}/embed/`;
-    iframe.title = `Strava Activity for Stage ${stageIndex + 1}`;
+    // Create a div to hold the Strava embed
+    const stravaContainer = document.createElement('div');
+    stravaContainer.className = 'strava-embed-container';
+    profileContainer.appendChild(stravaContainer);
     
-    // Add to container
-    profileContainer.appendChild(iframe);
+    // Use Strava's official embed code
+    stravaContainer.innerHTML = `
+        <div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}">
+            <a href="https://www.strava.com/activities/${stravaId}" target="_blank">
+                View activity on Strava
+            </a>
+        </div>
+    `;
     
-    console.log("Strava iframe added to DOM");
+    // Load Strava's embed script
+    const script = document.createElement('script');
+    script.src = 'https://strava-embeds.com/embed.js';
+    profileContainer.appendChild(script);
+    
+    console.log("Strava embed added to DOM");
 }
 
 function checkStravaStatus() {
