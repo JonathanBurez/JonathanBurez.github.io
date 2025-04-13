@@ -38,14 +38,6 @@
         <div id="map"></div>
         <div id="profileContainer"></div>
         <div id="info-panel">
-          document.getElementById('info-panel').innerHTML = `
-              <div class="info-panel-header">
-                  <h3 class="info-panel-title">Trip Information</h3>
-                  <span class="info-panel-toggle">▼</span>
-              </div>
-              <div class="info-panel-content">
-              </div>
-          `;
         </div>
 
     <div id="photo-modal">
@@ -366,7 +358,11 @@
                 // Update distance display
                 document.getElementById('distance-traveled').textContent = route.distance.toFixed(1);
                 
-                // IMPORTANT: Check for Strava first, before creating elevation profile
+                // Clear profile container first
+                const profileContainer = document.getElementById('profileContainer');
+                profileContainer.innerHTML = '';
+                
+                // Check for Strava ID first
                 if (routes.stravaIds && routes.stravaIds[stageIndex]) {
                     // If there's a Strava ID, embed it
                     console.log(`Using Strava embed for stage ${stageIndex + 1}, ID: ${routes.stravaIds[stageIndex]}`);
