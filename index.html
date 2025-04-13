@@ -1001,24 +1001,29 @@ function embedStravaActivity(stageIndex, stravaId) {
     // Clear it again just to be safe
     profileContainer.innerHTML = '';
     
-    // Create a div to hold the Strava embed
-    const stravaContainer = document.createElement('div');
-    stravaContainer.className = 'strava-embed-container';
-    profileContainer.appendChild(stravaContainer);
-    
-    // Use Strava's official embed code
-    stravaContainer.innerHTML = `
-        <div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}">
+    // Use Strava's official HTML5 embed code
+    const stravaEmbed = document.createElement('div');
+    stravaEmbed.className = 'strava-activity-embed';
+    stravaEmbed.innerHTML = `
+        <script src="https://strava-embeds.com/embed.js"></script>
+        <div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}" data-style="standard">
             <a href="https://www.strava.com/activities/${stravaId}" target="_blank">
                 View activity on Strava
             </a>
         </div>
     `;
     
-    // Load Strava's embed script
-    const script = document.createElement('script');
-    script.src = 'https://strava-embeds.com/embed.js';
-    profileContainer.appendChild(script);
+    profileContainer.appendChild(stravaEmbed);
+    
+    // Force script execution (sometimes necessary when dynamically adding script tags)
+    const scripts = stravaEmbed.getElementsByTagName('script');
+    for (let i = 0; i < scripts.length; i++) {
+        const oldScript = scripts[i];
+        const newScript = document.createElement('script');
+        newScript.src = oldScript.src;
+        newScript.textContent = oldScript.textContent;
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+    }
     
     console.log("Strava embed added to DOM");
 }
