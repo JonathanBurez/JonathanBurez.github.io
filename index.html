@@ -993,41 +993,29 @@ async function getCurrentWeather() {
 }
 
 function embedStravaActivity(stageIndex, stravaId) {
-    console.log(`Embedding Strava activity ${stravaId} for stage ${stageIndex + 1}`);
+    console.log(`Adding Strava activity link for stage ${stageIndex + 1}`);
     
     // Get the profile container
     const profileContainer = document.getElementById('profileContainer');
     
-    // Clear it again just to be safe
+    // Clear existing content
     profileContainer.innerHTML = '';
     
-    // Create a container with proper structure for Strava embed
-    const stravaContainer = document.createElement('div');
-    stravaContainer.className = 'strava-embed-wrapper';
-    profileContainer.appendChild(stravaContainer);
-    
-    // Add the placeholder directly
-    stravaContainer.innerHTML = `
-        <div class="strava-embed-placeholder" data-embed-type="activity" data-embed-id="${stravaId}">
-            <a href="https://www.strava.com/activities/${stravaId}" target="_blank">
-                View activity on Strava
+    // Create a nice-looking link/button to the activity
+    const stravaLink = document.createElement('div');
+    stravaLink.className = 'strava-activity-link';
+    stravaLink.innerHTML = `
+        <div class="strava-fallback">
+            <img src="https://cdn.iconscout.com/icon/free/png-256/free-strava-3772409-3147400.png" 
+                 alt="Strava Logo" class="strava-logo">
+            <p>View detailed activity data for Stage ${stageIndex + 1} on Strava</p>
+            <a href="https://www.strava.com/activities/${stravaId}" target="_blank" class="strava-button">
+                Open Activity
             </a>
         </div>
     `;
     
-    // Load the script separately after the DOM is set up
-    setTimeout(() => {
-        // Remove any existing Strava script to avoid duplicates
-        const existingScripts = document.querySelectorAll('script[src*="strava-embeds.com"]');
-        existingScripts.forEach(script => script.remove());
-        
-        // Add the script freshly
-        const script = document.createElement('script');
-        script.src = 'https://strava-embeds.com/embed.js';
-        document.body.appendChild(script);
-        
-        console.log("Strava embed script added to DOM");
-    }, 100);
+    profileContainer.appendChild(stravaLink);
 }
 
 function checkStravaStatus() {
