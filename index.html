@@ -951,6 +951,12 @@ function registerStravaActivities() {
     // registerStravaActivity(9, '2345678901'); // Stage 10
     // registerStravaActivity(10, '2345678901'); // Stage 11
 }
+function registerStravaActivity(stageIndex, stravaId) {
+    if (!routes.stravaIds) routes.stravaIds = {};
+    routes.stravaIds[stageIndex] = stravaId;
+    console.log(`Registered Strava activity ${stravaId} for stage ${stageIndex + 1}`);
+}
+
 // Add this function to get current weather
 async function getCurrentWeather() {
     let lat, lon;
