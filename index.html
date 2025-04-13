@@ -361,19 +361,19 @@
                 document.getElementById('current-stage').textContent = `${stageIndex + 1}/11`;
                 
                 // Update elevation display
-                document.getElementById('elevation-gain').textContent = 
-                    route.elevation.toFixed(0);
+                document.getElementById('elevation-gain').textContent = route.elevation.toFixed(0);
                 
                 // Update distance display
-                document.getElementById('distance-traveled').textContent = 
-                    route.distance.toFixed(1);
+                document.getElementById('distance-traveled').textContent = route.distance.toFixed(1);
                 
-                // Check if there's a Strava activity for this stage
+                // IMPORTANT: Check for Strava first, before creating elevation profile
                 if (routes.stravaIds && routes.stravaIds[stageIndex]) {
-                    // If yes, embed the Strava activity
+                    // If there's a Strava ID, embed it
+                    console.log(`Using Strava embed for stage ${stageIndex + 1}, ID: ${routes.stravaIds[stageIndex]}`);
                     embedStravaActivity(stageIndex, routes.stravaIds[stageIndex]);
                 } else {
-                    // If no, create the elevation profile as before
+                    // Only create elevation profile if no Strava activity exists
+                    console.log(`No Strava activity for stage ${stageIndex + 1}, showing elevation profile`);
                     createElevationProfile(stageIndex);
                 }
             }
@@ -986,6 +986,8 @@ async function getCurrentWeather() {
         const profileContainer = document.getElementById('profileContainer');
         profileContainer.innerHTML = '';
         
+        console.log(`Embedding Strava activity ${stravaId} for stage ${stageIndex + 1}`);
+        
         // Create iframe for the Strava activity
         const iframe = document.createElement('iframe');
         iframe.frameBorder = '0';
@@ -997,10 +999,6 @@ async function getCurrentWeather() {
         
         // Add iframe to container
         profileContainer.appendChild(iframe);
-        
-        // Store this Strava ID in a lookup object for future reference
-        if (!routes.stravaIds) routes.stravaIds = {};
-        routes.stravaIds[stageIndex] = stravaId;
     }
 
 // Modify initialization to wait for Chart.js
