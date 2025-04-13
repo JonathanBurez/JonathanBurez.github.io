@@ -110,6 +110,12 @@
             stravaIds: {}  // Initialize this object early
         };
         
+        window.debugStrava = function() {
+            console.log("Current routes object:", routes);
+            console.log("Registered Strava IDs:", routes.stravaIds);
+            console.log("Profile container contents:", document.getElementById('profileContainer').innerHTML);
+        };
+
         // Create a foldable legend
         const legend = L.control({position: 'bottomright'});
         legend.onAdd = function (map) {
@@ -345,40 +351,38 @@
         
         // Focus on a specific stage
         function focusOnStage(stageIndex) {
+            console.log(`Focusing on stage ${stageIndex}`);
+            
             if (routes.stages[stageIndex]) {
                 const route = routes.stages[stageIndex];
                 map.fitBounds(route.line.getBounds());
                 
-                // Update current stage display
+                // Update displays
                 document.getElementById('current-stage').textContent = `${stageIndex + 1}/11`;
-                
-                // Update elevation display
                 document.getElementById('elevation-gain').textContent = route.elevation.toFixed(0);
-                
-                // Update distance display
                 document.getElementById('distance-traveled').textContent = route.distance.toFixed(1);
                 
-                // Clear profile container first
+                // Clear the profile container completely
                 const profileContainer = document.getElementById('profileContainer');
                 profileContainer.innerHTML = '';
                 
-                // Debug logging
-                console.log("routes.stravaIds:", routes.stravaIds);
-                console.log(`Checking for Strava ID for stage ${stageIndex}`);
-                console.log(`Strava ID found:`, routes.stravaIds[stageIndex]);
+                // Explicitly log what we're checking for
+                console.log(`Looking for Strava ID for stage ${stageIndex}:`, routes.stravaIds[stageIndex]);
                 
-                // Check for Strava ID with more explicit condition
-                if (routes.stravaIds && routes.stravaIds[stageIndex] && routes.stravaIds[stageIndex].length > 0) {
-                    // If there's a Strava ID, embed it
-                    console.log(`Using Strava embed for stage ${stageIndex + 1}, ID: ${routes.stravaIds[stageIndex]}`);
-                    embedStravaActivity(stageIndex, routes.stravaIds[stageIndex]);
+                // Check if we have a Strava ID for this stage
+                if (routes.stravaIds && routes.stravaIds[stageIndex]) {
+                    console.log(`Found Strava ID ${routes.stravaIds[stageIndex]} for stage ${stageIndex + 1}`);
+                    // Use a setTimeout to ensure DOM is ready
+                    setTimeout(() => {
+                        embedStravaActivity(stageIndex, routes.stravaIds[stageIndex]);
+                    }, 100);
                 } else {
-                    // Only create elevation profile if no Strava activity exists
-                    console.log(`No Strava activity for stage ${stageIndex + 1}, showing elevation profile`);
+                    console.log(`No Strava ID found for stage ${stageIndex + 1}, showing elevation profile`);
                     createElevationProfile(stageIndex);
                 }
             }
         }
+
 
         // Helper function to extract location from image
         async function extractLocationFromImage(file) {
@@ -941,6 +945,10 @@ function updateWeatherWidget(weatherData) {
     `;
 }
 function registerStravaActivities() {
+    // Clear any existing registrations
+    routes.stravaIds = {};
+    
+    // Register known Strava activities
     registerStravaActivity(0, '14163389019'); // Stage 1
     // registerStravaActivity(1, '2345678901'); // Stage 2
     // registerStravaActivity(2, '2345678901'); // Stage 3
@@ -952,7 +960,9 @@ function registerStravaActivities() {
     // registerStravaActivity(8, '2345678901'); // Stage 9
     // registerStravaActivity(9, '2345678901'); // Stage 10
     // registerStravaActivity(10, '2345678901'); // Stage 11
+    console.log("Strava activities registered:", routes.stravaIds);
 }
+
 function registerStravaActivity(stageIndex, stravaId) {
     if (!routes.stravaIds) routes.stravaIds = {};
     routes.stravaIds[stageIndex] = stravaId;
@@ -982,30 +992,41 @@ async function getCurrentWeather() {
     updateWeatherWidget(weatherData);
 }
 
-    function embedStravaActivity(stageIndex, stravaId) {
-        // Clear the profile container
-        const profileContainer = document.getElementById('profileContainer');
-        profileContainer.innerHTML = '';
-        
-        console.log(`Embedding Strava activity ${stravaId} for stage ${stageIndex + 1}`);
-        
-        // Create iframe for the Strava activity
-        const iframe = document.createElement('iframe');
-        iframe.frameBorder = '0';
-        iframe.allowTransparency = true;
-        iframe.width = '100%';
-        iframe.height = '405px'; // Standard height for Strava embeds
-        iframe.src = `https://www.strava.com/activities/${stravaId}/embed`;
-        iframe.className = 'strava-embed';
-        
-        // Add iframe to container
-        profileContainer.appendChild(iframe);
-    }
+function embedStravaActivity(stageIndex, stravaId) {
+    console.log(`Embedding Strava activity ${stravaId} for stage ${stageIndex + 1}`);
+    
+    // Get the profile container
+    const profileContainer = document.getElementById('profileContainer');
+    
+    // Clear it again just to be safe
+    profileContainer.innerHTML = '';
+    
+    // Create the iframe
+    const iframe = document.createElement('iframe');
+    iframe.frameBorder = '0';
+    iframe.allowTransparency = true;
+    iframe.scrolling = 'no';
+    iframe.width = '100%';
+    iframe.height = '405px';
+    iframe.src = `https://www.strava.com/activities/${stravaId}/embed/`;
+    iframe.title = `Strava Activity for Stage ${stageIndex + 1}`;
+    
+    // Add to container
+    profileContainer.appendChild(iframe);
+    
+    console.log("Strava iframe added to DOM");
+}
+
+function checkStravaStatus() {
+    console.log("Current routes object:", routes);
+    console.log("Registered Strava IDs:", routes.stravaIds);
+}
 
 // Modify initialization to wait for Chart.js
 async function initApp() {
     // Register Strava activities
     registerStravaActivities();
+    checkStravaStatus();
     
     // First load Chart.js
     await loadChartJS();
