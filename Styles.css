@@ -9,7 +9,7 @@ body {
 #container {
     display: flex;
     flex-direction: column;
-    height: 10vh;
+    min-height: 100vh;
 }
 
 #header {
@@ -28,14 +28,14 @@ body {
 
 #profileContainer {
     height: 30vh;
-    width: 100vw;
+    width: 100%;
     position: relative;
     background-color: #f8f9fa;
     border-top: 1px solid #ddd;
 }
 
 #elevationChart {
-    width: 100vw;
+    width: 100%;
     height: 100%;
 }
 
@@ -44,14 +44,16 @@ body {
     position: absolute;
     top: 10px;
     left: 10px;
-    width: 150px;
+    width: 250px;
     background-color: rgba(255, 255, 255, 0.9);
     padding: 5px;
     border-radius: 8px;
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: transform 0.3s ease;
-    font-size: 12px;
+    font-size: 14px;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .info-panel-header {
@@ -60,20 +62,23 @@ body {
     align-items: center;
     cursor: pointer;
     margin-bottom: 5px;
+    padding: 5px;
 }
 
 .info-panel-title {
     font-weight: bold;
     margin: 0;
+    font-size: 16px;
 }
 
 .info-panel-toggle {
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .info-panel-content {
     overflow: hidden;
     transition: max-height 0.3s ease;
+    padding: 0 5px;
 }
 
 .info-panel-collapsed .info-panel-content {
@@ -87,10 +92,11 @@ body {
 
 /* Trip stats */
 #trip-stats {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
-    font-size: 12px;
+    font-size: 14px;
+    margin-bottom: 15px;
 }
 
 .stat-box {
@@ -101,13 +107,14 @@ body {
 }
 
 .stat-value {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
     color: #e63946;
 }
 
 .stat-label {
     color: #457b9d;
+    font-size: 12px;
 }
 
 /* Photo gallery */
@@ -116,15 +123,18 @@ body {
     overflow-x: auto;
     gap: 10px;
     padding: 10px 0;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scrollbar-width: thin;
 }
 
 .photo-thumbnail {
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     object-fit: cover;
     border-radius: 8px;
     cursor: pointer;
     transition: transform 0.2s;
+    flex-shrink: 0;
 }
 
 .photo-thumbnail:hover {
@@ -140,13 +150,13 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.8);
-    z-index: 1000;
+    z-index: 2000;
     justify-content: center;
     align-items: center;
 }
 
 #modal-content {
-    max-width: 80%;
+    max-width: 90%;
     max-height: 80%;
 }
 
@@ -154,31 +164,41 @@ body {
     max-width: 100%;
     max-height: 80vh;
     border-radius: 8px;
+    object-fit: contain;
 }
 
 #modal-caption {
     color: white;
     text-align: center;
     padding: 10px;
+    font-size: 14px;
 }
 
 #close-modal {
     position: absolute;
     top: 20px;
-    right: 30px;
+    right: 20px;
     color: white;
-    font-size: 12px;
+    font-size: 24px;
     cursor: pointer;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    background: rgba(0,0,0,0.5);
+    border-radius: 50%;
 }
 
 /* Map components */
 .custom-popup .leaflet-popup-content-wrapper {
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 8px;
+    max-width: 90vw;
 }
 
 .popup-image {
-    width: 200px;
+    width: 100%;
+    max-width: 300px;
     border-radius: 4px;
     margin-bottom: 5px;
 }
@@ -193,6 +213,7 @@ body {
     margin-top: 10px;
     font-style: italic;
     color: #666;
+    font-size: 12px;
 }
 
 /* Stage selector */
@@ -200,18 +221,19 @@ body {
     display: flex;
     justify-content: right;
     margin: 10px 0;
+    padding: 0 10px;
 }
 
 .stage-dropdown {
     background-color: #457b9d;
     color: white;
     border: none;
-    padding: 10px 10px;
+    padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
-    min-width: 200px;
+    min-width: 150px;
     transition: all 0.2s;
 }
 
@@ -230,8 +252,9 @@ body {
     background-color: white;
     border-radius: 5px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    line-height: 1;
+    line-height: 1.2;
     max-width: 200px;
+    font-size: 12px;
 }
 
 .legend-header {
@@ -243,7 +266,8 @@ body {
 
 .legend-toggle {
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
+    padding: 5px;
 }
 
 .legend-content {
@@ -253,26 +277,23 @@ body {
 .legend-item {
     display: flex;
     align-items: center;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
 .legend-color {
     width: 20px;
     height: 5px;
     margin-right: 8px;
+    flex-shrink: 0;
 }
 
-/* Animations */
-.cyclist-icon {
-    animation: pulse 1.5s infinite;
-}
-
+/* Weather widget */
 #weather-widget {
     background: rgba(255, 255, 255, 0.8);
     border-radius: 8px;
     padding: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .weather-content {
@@ -287,30 +308,165 @@ body {
 
 .weather-info {
     margin-left: 10px;
+    flex: 1;
 }
 
 .weather-temp {
-    font-size: 1.2rem;
+    font-size: 16px;
     font-weight: bold;
 }
 
 .weather-desc {
     text-transform: capitalize;
+    font-size: 14px;
 }
 
 .weather-location {
-    font-size: 0.8rem;
+    font-size: 12px;
     color: #666;
 }
 
 .weather-error {
     color: #c00;
-    font-size: 0.9rem;
+    font-size: 14px;
     text-align: center;
+}
+
+/* Animations */
+.cyclist-icon {
+    animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.2); }
     100% { transform: scale(1); }
+}
+
+/* Tablet styles */
+@media screen and (max-width: 1024px) {
+    #info-panel {
+        width: 220px;
+    }
+    
+    .photo-thumbnail {
+        width: 100px;
+        height: 100px;
+    }
+    
+    #trip-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile styles */
+@media screen and (max-width: 768px) {
+    #header {
+        padding: 5px;
+    }
+    
+    #map {
+        height: 50vh;
+    }
+    
+    #profileContainer {
+        height: 35vh;
+    }
+    
+    #info-panel {
+        position: relative;
+        top: auto;
+        left: auto;
+        width: 100%;
+        margin: 0 0 10px 0;
+        border-radius: 0;
+        box-shadow: none;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .info-panel-header {
+        padding: 10px;
+    }
+    
+    .info-panel-content {
+        padding: 0 10px 10px 10px;
+    }
+    
+    #trip-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stage-dropdown {
+        width: 100%;
+        font-size: 14px;
+        padding: 12px;
+    }
+    
+    #stage-selector {
+        justify-content: center;
+        padding: 0 15px;
+    }
+    
+    .legend {
+        max-width: 150px;
+    }
+    
+    .legend-item {
+        margin-bottom: 5px;
+    }
+    
+    #close-modal {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .photo-thumbnail {
+        width: 90px;
+        height: 90px;
+    }
+    
+    /* Ensure touch targets are at least 44px */
+    .info-panel-toggle, 
+    .legend-toggle,
+    .stage-dropdown,
+    #close-modal {
+        min-height: 44px;
+        min-width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Small phones */
+@media screen and (max-width: 480px) {
+    .stat-box {
+        padding: 8px 5px;
+    }
+    
+    .stat-value {
+        font-size: 16px;
+    }
+    
+    .stat-label {
+        font-size: 10px;
+    }
+    
+    #map {
+        height: 45vh;
+    }
+    
+    #profileContainer {
+        height: 30vh;
+    }
+    
+    .photo-thumbnail {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .weather-icon img {
+        width: 40px;
+        height: 40px;
+    }
 }

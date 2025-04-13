@@ -79,6 +79,15 @@
         style: 'https://api.maptiler.com/maps/ch-swisstopo-lbm/style.json', //optional
       }).addTo(map);
 
+    // Redraw chart on window resize
+    window.addEventListener('resize', function() {
+        const chartElement = document.getElementById('elevationChart');
+        if (chartElement) {
+            const chart = Chart.getChart(chartElement);
+            if (chart) chart.resize();
+        }
+    });
+
         // Variables to store trip data
         let currentPosition = null;
         let positionMarker = null;
@@ -173,6 +182,17 @@
             opacity: 0.8
         }).addTo(map);
         
+        function isMobileDevice() {
+            return window.innerWidth <= 768;
+        }
+
+        // Example usage - collapse info panel by default on mobile
+        function initializeResponsiveElements() {
+            if (isMobileDevice()) {
+                document.getElementById('info-panel').classList.add('info-panel-collapsed');
+            }
+        }
+
         // Function to parse GPX files
         async function parseGPX(url, stageIndex) {
             try {
@@ -1007,6 +1027,22 @@ async function initApp() {
             toggle.textContent = '▼';
         }
     });
+
+    // Add this to your initApp function
+    function optimizeForTouch() {
+        if ('ontouchstart' in window) {
+            // Increase popup size for touch devices
+            map.options.tapTolerance = 30;
+            
+            // Increase marker size for easier tapping
+            const markerElements = document.querySelectorAll('.leaflet-marker-icon');
+            markerElements.forEach(marker => {
+                marker.style.width = '30px';
+                marker.style.height = '30px';
+            });
+        }
+    }
+
     addTestPhoto();
     // Add this at the end of the initApp function:
     getCurrentWeather();
