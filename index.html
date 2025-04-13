@@ -366,6 +366,15 @@
                 // Update distance display
                 document.getElementById('distance-traveled').textContent = 
                     route.distance.toFixed(1);
+                
+                // Check if there's a Strava activity for this stage
+                if (routes.stravaIds && routes.stravaIds[stageIndex]) {
+                    // If yes, embed the Strava activity
+                    embedStravaActivity(stageIndex, routes.stravaIds[stageIndex]);
+                } else {
+                    // If no, create the elevation profile as before
+                    createElevationProfile(stageIndex);
+                }
             }
         }
 
@@ -929,7 +938,19 @@ function updateWeatherWidget(weatherData) {
         </div>
     `;
 }
-
+function registerStravaActivities() {
+    registerStravaActivity(0, '14163389019'); // Stage 1
+    // registerStravaActivity(1, '2345678901'); // Stage 2
+    // registerStravaActivity(2, '2345678901'); // Stage 3
+    // registerStravaActivity(3, '2345678901'); // Stage 4
+    // registerStravaActivity(4, '2345678901'); // Stage 5
+    // registerStravaActivity(5, '2345678901'); // Stage 6
+    // registerStravaActivity(6, '2345678901'); // Stage 7
+    // registerStravaActivity(7, '2345678901'); // Stage 8
+    // registerStravaActivity(8, '2345678901'); // Stage 9
+    // registerStravaActivity(9, '2345678901'); // Stage 10
+    // registerStravaActivity(10, '2345678901'); // Stage 11
+}
 // Add this function to get current weather
 async function getCurrentWeather() {
     let lat, lon;
@@ -953,6 +974,28 @@ async function getCurrentWeather() {
     updateWeatherWidget(weatherData);
 }
 
+    function embedStravaActivity(stageIndex, stravaId) {
+        // Clear the profile container
+        const profileContainer = document.getElementById('profileContainer');
+        profileContainer.innerHTML = '';
+        
+        // Create iframe for the Strava activity
+        const iframe = document.createElement('iframe');
+        iframe.frameBorder = '0';
+        iframe.allowTransparency = true;
+        iframe.width = '100%';
+        iframe.height = '405px'; // Standard height for Strava embeds
+        iframe.src = `https://www.strava.com/activities/${stravaId}/embed`;
+        iframe.className = 'strava-embed';
+        
+        // Add iframe to container
+        profileContainer.appendChild(iframe);
+        
+        // Store this Strava ID in a lookup object for future reference
+        if (!routes.stravaIds) routes.stravaIds = {};
+        routes.stravaIds[stageIndex] = stravaId;
+    }
+
 // Modify initialization to wait for Chart.js
 async function initApp() {
     // First load Chart.js
@@ -961,6 +1004,9 @@ async function initApp() {
     // Then load GPX routes
     await loadGPXFiles();
     
+    // Register Strava activities
+    registerStravaActivities();
+
     // Add the info panel header and toggle functionality
     const infoPanel = document.getElementById('info-panel');
     const infoPanelContent = infoPanel.innerHTML;
