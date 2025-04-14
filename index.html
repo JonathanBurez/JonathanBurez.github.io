@@ -1049,6 +1049,7 @@ async function initApp() {
 
     // Add the info panel header and toggle functionality
     const infoPanel = document.getElementById('info-panel');
+    infoPanel.remove(); // Remove it from its current position
     const infoPanelContent = infoPanel.innerHTML;
     
     // Wrap existing content in the panel content div
@@ -1095,6 +1096,8 @@ async function initApp() {
                   <div id="last-update">Last updated: Not yet started</div>
         </div>
     `;
+    document.getElementById('container').appendChild(infoPanel);
+    
     // Inside the initApp function, after setting the infoPanel.innerHTML, add this line:
     infoPanel.classList.add('info-panel-collapsed');
 

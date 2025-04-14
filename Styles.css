@@ -372,12 +372,19 @@ body {
         padding: 5px;
     }
     
+    #container {
+        display: flex;
+        flex-direction: column;
+    }
+
     #map {
         height: 50vh;
+        order: 1;
     }
     
     #profileContainer {
         height: 35vh;
+        order: 2;
     }
     
     #info-panel {
@@ -385,10 +392,12 @@ body {
         top: auto;
         left: auto;
         width: 100%;
-        margin: 0 0 10px 0;
+        margin: 0;
         border-radius: 0;
         box-shadow: none;
-        border-bottom: 1px solid #ddd;
+        border-top: 1px solid #ddd;
+        border-bottom: none;
+        order: 3; /* Ensure it appears after map and profileContainer */
     }
     
     .info-panel-header {
