@@ -378,12 +378,10 @@ body {
     }
 
     #map {
-        height: 50vh;
         order: 1;
     }
     
     #profileContainer {
-        height: 35vh;
         order: 2;
     }
     
