@@ -370,6 +370,7 @@ body {
 @media screen and (max-width: 768px) {
     #header {
         padding: 5px;
+        order: 1;
     }
     
     #container {
@@ -378,24 +379,20 @@ body {
     }
 
     #map {
-        order: 1;
-    }
-    
-    #profileContainer {
         order: 2;
     }
     
+    #profileContainer {
+        order: 3;
+    }
+    
     #info-panel {
-        position: relative;
-        top: auto;
-        left: auto;
-        width: 100%;
+        order: 4;
+        position: static;
+        width: auto;
         margin: 0;
         border-radius: 0;
         box-shadow: none;
-        border-top: 1px solid #ddd;
-        border-bottom: none;
-        order: 3; /* Ensure it appears after map and profileContainer */
     }
     
     .info-panel-header {
