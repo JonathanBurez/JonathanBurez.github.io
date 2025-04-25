@@ -334,7 +334,15 @@ body {
 
 /* Animations */
 .cyclist-icon {
-    animation: pulse 1.5s infinite;
+    font-size: 24px;
+    text-align: center;
+    line-height: 40px;
+    z-index: 1000 !important; /* Ensure the icon stays on top */
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.5)); /* Add a shadow for better visibility */
+}
+
+.leaflet-marker-pane {
+    z-index: 600 !important;
 }
 
 @keyframes pulse {

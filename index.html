@@ -165,8 +165,8 @@
         const cyclistIcon = L.divIcon({
             html: '🚴‍♂️',
             className: 'cyclist-icon',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
         });
         
         positionMarker = L.marker([0, 0], {
@@ -409,10 +409,31 @@
 
         // Function to update position from Spot Gen4
         function updatePosition(lat, lon, timestamp) {
-            if (!currentPosition) {
-                positionMarker.setLatLng([lat, lon]).addTo(map);
+            // Create marker if it doesn't exist yet
+            if (!positionMarker || !map.hasLayer(positionMarker)) {
+                positionMarker = L.marker([lat, lon], {
+                    icon: cyclistIcon,
+                    zIndexOffset: 1000
+                }).addTo(map);
+                
+                // Add popup to show coordinates when clicked
+                positionMarker.bindPopup(`
+                    <strong>Current Position</strong><br>
+                    Latitude: ${lat.toFixed(5)}<br>
+                    Longitude: ${lon.toFixed(5)}<br>
+                    Last updated: ${new Date(timestamp).toLocaleString()}
+                `);
             } else {
+                // Update existing marker position
                 positionMarker.setLatLng([lat, lon]);
+                
+                // Update the popup content
+                positionMarker.setPopupContent(`
+                    <strong>Current Position</strong><br>
+                    Latitude: ${lat.toFixed(5)}<br>
+                    Longitude: ${lon.toFixed(5)}<br>
+                    Last updated: ${new Date(timestamp).toLocaleString()}
+                `);
             }
             
             currentPosition = [lat, lon];
@@ -429,17 +450,17 @@
                 pathLine.setLatLngs(actualPath);
             }
             
-            // Update last update time
-            const updateTime = new Date(timestamp);
+            // Update last update time display
             document.getElementById('last-update').textContent = 
-                'Last updated: ' + updateTime.toLocaleString() + 'Lat: ' + lat.toLocaleString() + 'Long: ' + lon.toLocaleString();
+                `Last updated: ${new Date(timestamp).toLocaleString()} | Lat: ${lat.toFixed(5)} | Long: ${lon.toFixed(5)}`;
             
             // Determine current stage based on position
             determineCurrentStage(lat, lon);
             
             // Also update position on elevation profile if we're looking at a specific stage
             updatePositionOnElevationProfile(lat, lon);
-        }       
+        }
+
         // Determine which stage the cyclist is currently on
         function determineCurrentStage(lat, lon) {
             const position = L.latLng(lat, lon);
@@ -785,11 +806,13 @@
                 const response = await fetch(`https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/${feedId}/latest.xml`);
                 
                 if (!response.ok) {
-                throw new Error(`API responded with status: ${response.status}`);
+                    throw new Error(`API responded with status: ${response.status}`);
                 }
 
                 // Get the response as text and parse it as XML
                 const xmlText = await response.text();
+                console.log("Raw XML response:", xmlText); // Add this for debugging
+                
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                 
@@ -797,30 +820,26 @@
                 const messages = xmlDoc.querySelectorAll("message");
                 
                 if (messages && messages.length > 0) {
-                // Get the latest message (first in the list)
-                const latestMessage = messages[0];
-                
-                // Extract values using querySelector or getAttribute depending on your XML structure
-                const latitude = latestMessage.querySelector("latitude").textContent;
-                const longitude = latestMessage.querySelector("longitude").textContent;
-                const dateTime = latestMessage.querySelector("dateTime").textContent;
-                
-                // Update position with the latest coordinates
-                updatePosition(
-                    parseFloat(latitude),
-                    parseFloat(longitude),
-                    dateTime
-                );
-                
-                console.log(`Position updated: ${latitude}, ${longitude}`);
+                    // Get the latest message (first in the list)
+                    const latestMessage = messages[0];
+                    
+                    // Extract values using querySelector
+                    const latitude = parseFloat(latestMessage.querySelector("latitude").textContent);
+                    const longitude = parseFloat(latestMessage.querySelector("longitude").textContent);
+                    const dateTime = latestMessage.querySelector("dateTime").textContent;
+                    
+                    console.log(`Spot data found: Lat ${latitude}, Long ${longitude}, Time ${dateTime}`);
+                    
+                    // Update position with the latest coordinates
+                    updatePosition(latitude, longitude, dateTime);
                 } else {
-                console.log("No messages found in Spot data");
+                    console.log("No messages found in Spot data");
                 }
             } catch (error) {
                 console.error('Error fetching Spot data:', error);
             }
         }
- 
+
         function addTestPhoto() {
     // Add your photo URLs here in the future
     const photoUrls = [
