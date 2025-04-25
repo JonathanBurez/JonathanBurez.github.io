@@ -787,9 +787,10 @@
                 if (!response.ok) {
                 throw new Error(`API responded with status: ${response.status}`);
                 }
-                
+
                 // Get the response as text and parse it as XML
                 const xmlText = await response.text();
+                console.log("Raw XML response:", xmlText);
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                 
