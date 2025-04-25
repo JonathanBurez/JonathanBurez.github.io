@@ -432,7 +432,7 @@
             // Update last update time
             const updateTime = new Date(timestamp);
             document.getElementById('last-update').textContent = 
-                'Last updated: ' + updateTime.toLocaleString();
+                'Last updated: ' + updateTime.toLocaleString() + 'Lat: ' + lat.toLocaleString() + 'Long: ' + lon.toLocaleString();
             
             // Determine current stage based on position
             determineCurrentStage(lat, lon);
@@ -790,7 +790,6 @@
 
                 // Get the response as text and parse it as XML
                 const xmlText = await response.text();
-                console.log("Raw XML response:", xmlText);
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                 
