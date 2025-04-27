@@ -436,16 +436,65 @@
             
             currentPosition = [lat, lon];
             
-            // We now handle the entire path in fetchSpotData, not just add single points
-            // Update actual path line with the full actualPath array
-            if (!pathLine) {
-                pathLine = L.polyline(actualPath, {
-                    color: '#e63946',
-                    weight: 5,
-                    opacity: 0.8
-                }).addTo(map);
-            } else {
-                pathLine.setLatLngs(actualPath);
+            // Get the current stage color
+            const stageColor = stageColors[routes.current] || '#e63946';
+            
+            // Remove old path point markers if they exist
+            if (window.pathPointMarkers) {
+                window.pathPointMarkers.forEach(marker => {
+                    if (map.hasLayer(marker)) {
+                        map.removeLayer(marker);
+                    }
+                });
+            }
+            
+            // Create array for path point markers
+            window.pathPointMarkers = [];
+            
+            // Add circle markers at each point and update the path line
+            if (actualPath && actualPath.length > 0) {
+                // Convert the path for Leaflet polyline
+                const pathCoords = actualPath.map(point => [point.lat, point.lng]);
+                
+                // Update or create the path line
+                if (!pathLine) {
+                    pathLine = L.polyline(pathCoords, {
+                        color: stageColor,
+                        weight: 2, // Thinner line
+                        opacity: 0.7,
+                        dashArray: '5, 5' // Optional: makes line dashed to differentiate from route
+                    }).addTo(map);
+                } else {
+                    pathLine.setLatLngs(pathCoords);
+                    pathLine.setStyle({
+                        color: stageColor,
+                        weight: 2,
+                        opacity: 0.7,
+                        dashArray: '5, 5'
+                    });
+                }
+                
+                // Add small circles at each point
+                actualPath.forEach(point => {
+                    const circleMarker = L.circleMarker([point.lat, point.lng], {
+                        radius: 3,
+                        fillColor: stageColor,
+                        color: "#ffffff",
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map);
+                    
+                    // Add timestamp popup
+                    circleMarker.bindPopup(`
+                        <strong>Tracked Position</strong><br>
+                        Latitude: ${point.lat.toFixed(5)}<br>
+                        Longitude: ${point.lng.toFixed(5)}<br>
+                        Time: ${point.time.toLocaleString()}
+                    `);
+                    
+                    window.pathPointMarkers.push(circleMarker);
+                });
             }
             
             // Update last update time display
@@ -467,17 +516,15 @@
                     actualPath = JSON.parse(savedPath);
                     console.log(`Loaded ${actualPath.length} points from saved path`);
                     
-                    // If we have points, update the path line
+                    // Make sure time is properly converted back to Date objects
+                    actualPath.forEach(point => {
+                        point.time = new Date(point.time);
+                    });
+                    
+                    // If we have points, update the path visualization
                     if (actualPath.length > 0) {
-                        if (!pathLine) {
-                            pathLine = L.polyline(actualPath, {
-                                color: '#e63946',
-                                weight: 5,
-                                opacity: 0.8
-                            }).addTo(map);
-                        } else {
-                            pathLine.setLatLngs(actualPath);
-                        }
+                        const latestPoint = actualPath[actualPath.length - 1];
+                        updatePosition(latestPoint.lat, latestPoint.lng, latestPoint.time.toISOString());
                     }
                 } catch (e) {
                     console.error('Error loading saved path:', e);
@@ -527,6 +574,25 @@
                         routes.stages[closestStage].elevation.toFixed(0);
                     document.getElementById('distance-traveled').textContent = 
                         routes.stages[closestStage].distance.toFixed(1);
+                }
+                
+                // Update path color based on current stage
+                if (pathLine) {
+                    pathLine.setStyle({
+                        color: stageColors[closestStage],
+                        weight: 2,
+                        opacity: 0.7,
+                        dashArray: '5, 5'
+                    });
+                    
+                    // Update circle markers color
+                    if (window.pathPointMarkers) {
+                        window.pathPointMarkers.forEach(marker => {
+                            marker.setStyle({
+                                fillColor: stageColors[closestStage]
+                            });
+                        });
+                    }
                 }
             }
         }
@@ -853,21 +919,23 @@
                         const longitude = parseFloat(message.querySelector("longitude").textContent);
                         const dateTime = message.querySelector("dateTime").textContent;
                         
-                        // Add to our tracked path
-                        actualPath.push([latitude, longitude]);
+                        // Add to our tracked path with timestamp for sorting
+                        actualPath.push({
+                            lat: latitude,
+                            lng: longitude,
+                            time: new Date(dateTime)
+                        });
                     });
                     
-                    // Sort actualPath by time if needed
-                    // (you might need to also store timestamps if ordering matters)
+                    // Sort actualPath by time (oldest first)
+                    actualPath.sort((a, b) => a.time - b.time);
                     
-                    // Update position with the latest message (first in the list)
-                    const latestMessage = messages[0];
-                    const latestLat = parseFloat(latestMessage.querySelector("latitude").textContent);
-                    const latestLon = parseFloat(latestMessage.querySelector("longitude").textContent);
-                    const latestDateTime = latestMessage.querySelector("dateTime").textContent;
+                    // Update position with the latest message
+                    const latestPoint = actualPath[actualPath.length - 1];
+                    const latestDateTime = latestPoint.time.toISOString();
                     
                     // Update position marker and route line
-                    updatePosition(latestLat, latestLon, latestDateTime);
+                    updatePosition(latestPoint.lat, latestPoint.lng, latestDateTime);
                     
                     // Save the path to localStorage for persistence
                     localStorage.setItem('actualPath', JSON.stringify(actualPath));
