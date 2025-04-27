@@ -1172,6 +1172,7 @@ async function getCurrentWeather() {
 // Modify initialization to wait for Chart.js
 async function initApp() {
     // Check for clear parameter in URL
+    // https://jonathanburez.github.io/index.html?clear=true
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('clear') && urlParams.get('clear') === 'true') {
         localStorage.removeItem('actualPath');
