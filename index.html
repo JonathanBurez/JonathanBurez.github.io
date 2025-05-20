@@ -1356,7 +1356,15 @@ async function getCurrentWeather() {
                 option.addEventListener('click', function () {
                     const selectedDiv = this.parentElement.previousElementSibling;
                     selectedDiv.textContent = this.textContent;
-//                  selectedDiv.classList.toggle('hope-icon', value === -1); // ✅ add this
+                    // selectedDiv.classList.toggle('hope-icon', value === -1);
+
+                    // Get the color from --color or use a fallback
+                    const color = this.style.getPropertyValue('--color') || '#000';
+
+                    // Apply vertical line to the selected item
+                    selectedDiv.style.borderLeft = `6px solid ${color}`;
+                    selectedDiv.style.paddingLeft = '8px';
+
                     this.parentElement.classList.remove('show');
 
                     const value = parseInt(this.getAttribute('data-value'));
