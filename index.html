@@ -445,7 +445,9 @@ function createCombinedElevationProfile() {
                     title: {
                         display: true,
                         text: 'Distance (km)'
-                    }
+                    },
+                min: 0,         // 👈 Hard-coded minimum x-axis value
+                max: 1010       // 👈 Hard-coded maximum x-axis value
                 },
                 y: {
                     title: {
