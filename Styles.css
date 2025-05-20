@@ -285,6 +285,10 @@ body {
     max-height: 300px;
     overflow-y: auto;
   }
+
+  .custom-dropdown .dropdown-options.show {
+    display: block;
+  }
   
   .custom-dropdown .dropdown-options div {
     padding: 8px 12px;
