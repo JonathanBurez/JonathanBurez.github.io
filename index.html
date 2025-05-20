@@ -1356,7 +1356,7 @@ async function getCurrentWeather() {
                 option.addEventListener('click', function () {
                     const selectedDiv = this.parentElement.previousElementSibling;
                     selectedDiv.textContent = this.textContent;
-                    selectedDiv.classList.toggle('hope-icon', value === -1); // ✅ add this
+//                  selectedDiv.classList.toggle('hope-icon', value === -1); // ✅ add this
                     this.parentElement.classList.remove('show');
 
                     const value = parseInt(this.getAttribute('data-value'));
