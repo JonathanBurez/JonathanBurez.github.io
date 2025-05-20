@@ -1045,8 +1045,6 @@ function createCombinedElevationProfile() {
         }
         // Load GPX files - replace these URLs with your actual GPX files
         async function loadGPXFiles() {
-            // Add event listener for dropdown
-            document.getElementById('stage-dropdown').addEventListener('change', handleStageChange);
             
             // Load stages
             parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day01.gpx', 0);
