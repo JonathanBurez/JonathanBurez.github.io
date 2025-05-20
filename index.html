@@ -19,20 +19,23 @@
     <div id="container">
         <div id="header">
             <div id="stage-selector">
-                <select id="stage-dropdown" class="stage-dropdown">
-                    <option value="-1" selected>Whole Trip</option>
-                    <option value="0">Stage 1</option>
-                    <option value="1">Stage 2</option>
-                    <option value="2">Stage 3</option>
-                    <option value="3">Stage 4</option>
-                    <option value="4">Stage 5</option>
-                    <option value="5">Stage 6</option>
-                    <option value="6">Stage 7</option>
-                    <option value="7">Stage 8</option>
-                    <option value="8">Stage 9</option>
-                    <option value="9">Stage 10</option>
-                    <option value="10">Stage 11</option>
-                </select>
+                <div id="stage-dropdown" class="custom-dropdown">
+                    <div class="selected">Whole Trip</div>
+                    <div class="dropdown-options">
+                      <div data-value="-1" style="--color: #000;">🌍 Whole Trip</div>
+                      <div data-value="0" style="--color: #d73027;">Stage 1</div>
+                      <div data-value="1" style="--color: #4575b4;">Stage 2</div>
+                      <div data-value="2" style="--color: #1a9850;">Stage 3</div>
+                      <div data-value="3" style="--color: #7b3294;">Stage 4</div>
+                      <div data-value="4" style="--color: #e66101;">Stage 5</div>
+                      <div data-value="5" style="--color: #ffcc00;">Stage 6</div>
+                      <div data-value="6" style="--color: #a6611a;">Stage 7</div>
+                      <div data-value="7" style="--color: #d01c8b;">Stage 8</div>
+                      <div data-value="8" style="--color: #666666;">Stage 9</div>
+                      <div data-value="9" style="--color: #1f968b;">Stage 10</div>
+                      <div data-value="10" style="--color: #f46d43;">Stage 11</div>
+                    </div>
+                  </div>                  
             </div>
         </div>
         <div id="map"></div>
@@ -299,19 +302,14 @@
         }
         
         // Function to handle stage dropdown change
-        function handleStageChange() {
-            const dropdown = document.getElementById('stage-dropdown');
-            const selectedValue = parseInt(dropdown.value);
-            
-            if (selectedValue === -1) {
-                // Whole trip selected - show all stages and fit all bounds
+        function handleStageChangeCustom(value) {
+            if (value === -1) {
                 showWholeTrip();
             } else {
-                // Individual stage selected
-                focusOnStage(selectedValue);
-                createElevationProfile(selectedValue);
+                focusOnStage(value);
+                createElevationProfile(value);
             }
-        }
+            }
         
         // Function to show the whole trip
 // Function to show the whole trip with combined elevation profile
@@ -1476,6 +1474,22 @@ async function initApp() {
         // Start the application
         initApp();
         
+        // Inside your final <script> block, after initApp()
+        document.querySelector('.custom-dropdown .selected').addEventListener('click', function () {
+        this.nextElementSibling.classList.toggle('show');
+        });
+
+        document.querySelectorAll('.custom-dropdown .dropdown-options div').forEach(option => {
+        option.addEventListener('click', function () {
+            const selectedDiv = this.parentElement.previousElementSibling;
+            selectedDiv.textContent = this.textContent;
+            this.parentElement.classList.remove('show');
+
+            const value = parseInt(this.getAttribute('data-value'));
+            document.getElementById('stage-dropdown').setAttribute('data-value', value);
+            handleStageChangeCustom(value);
+        });
+        });
         // DEMO FUNCTIONS - For testing only
         function runDemo() {
             // Simulate a journey along the first stage
