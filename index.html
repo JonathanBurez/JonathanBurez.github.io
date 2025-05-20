@@ -124,22 +124,21 @@
         };
 
         // Create a foldable legend => replaced
-        <script>
+
             const stageButtonsContainer = document.getElementById('stageButtons');
             const dropdown = document.getElementById('stage-dropdown');
             dropdown.style.display = 'none'; // hide dropdown visually
             stageColors.forEach((color, index) => {
-            const button = document.createElement('div');
-            button.className = 'stage-button';
-            button.style.backgroundColor = color;
-            button.title = `Stage ${index + 1}`;
-            button.addEventListener('click', () => {
-            dropdown.value = index;
-            handleStageChange();
+                const button = document.createElement('div');
+                button.className = 'stage-button';
+                button.style.backgroundColor = color;
+                button.title = `Stage ${index + 1}`;
+                button.addEventListener('click', () => {
+                dropdown.value = index;
+                handleStageChange();
+                });
+                stageButtonsContainer.appendChild(button);
             });
-            stageButtonsContainer.appendChild(button);
-        });
-        </script>
 
         // Create a marker for current position (initially hidden)
         const cyclistIcon = L.divIcon({
