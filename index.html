@@ -1344,6 +1344,31 @@ async function getCurrentWeather() {
             console.log("Registered Strava IDs:", routes.stravaIds);
         }
 
+        function setupStageDropdown() {
+            const selected = document.querySelector('.custom-dropdown .selected');
+            const options = document.querySelectorAll('.custom-dropdown .dropdown-options div');
+
+            if (!selected || options.length === 0) {
+                console.warn("Stage dropdown elements not found.");
+                return;
+            }
+
+            selected.addEventListener('click', function () {
+                this.nextElementSibling.classList.toggle('show');
+            });
+
+            options.forEach(option => {
+                option.addEventListener('click', function () {
+                    const selectedDiv = this.parentElement.previousElementSibling;
+                    selectedDiv.textContent = this.textContent;
+                    this.parentElement.classList.remove('show');
+
+                    const value = parseInt(this.getAttribute('data-value'));
+                    document.getElementById('stage-dropdown').setAttribute('data-value', value);
+                    handleStageChange(value);
+                });
+            });
+        }
 
 // Modify initialization to wait for Chart.js
 async function initApp() {
@@ -1467,27 +1492,13 @@ async function initApp() {
     setInterval(fetchSpotData, updateInterval);
 
     console.log(`Position updates scheduled every ${updateInterval/60000} minutes`);
+    setupStageDropdown();
 }
+
         
         // Start the application
         initApp();
         
-        // Inside your final <script> block, after initApp()
-        document.querySelector('.custom-dropdown .selected').addEventListener('click', function () {
-        this.nextElementSibling.classList.toggle('show');
-        });
-
-        document.querySelectorAll('.custom-dropdown .dropdown-options div').forEach(option => {
-        option.addEventListener('click', function () {
-            const selectedDiv = this.parentElement.previousElementSibling;
-            selectedDiv.textContent = this.textContent;
-            this.parentElement.classList.remove('show');
-
-            const value = parseInt(this.getAttribute('data-value'));
-            document.getElementById('stage-dropdown').setAttribute('data-value', value);
-            handleStageChange(value);
-        });
-        });
         // DEMO FUNCTIONS - For testing only
         function runDemo() {
             // Simulate a journey along the first stage
