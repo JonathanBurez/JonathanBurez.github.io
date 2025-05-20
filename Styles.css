@@ -312,11 +312,14 @@ body {
     display: inline-block;
     width: 16px;
     height: 16px;
-    background-image: url("Photos/Hope1000.png");
+    background-image: url("https://jonathanburez.github.io/Photos/Hope1000.png"); /* or raw.githubusercontent... if needed */
     background-size: contain;
     background-repeat: no-repeat;
+    background-position: center;
     margin-right: 8px;
+    flex-shrink: 0;
 }
+
 .stage-dropdown:hover {
     background-color: #1d3557;
 }
