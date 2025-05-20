@@ -18,7 +18,7 @@
 <body>
     <div id="container">
         <div id="header">
-            <!-- <div id="stage-selector">
+            <div id="stage-selector">
                 <select id="stage-dropdown" class="stage-dropdown">
                     <option value="-1" selected>Whole Trip</option>
                     <option value="0">Stage 1</option>
@@ -33,7 +33,7 @@
                     <option value="9">Stage 10</option>
                     <option value="10">Stage 11</option>
                 </select>
-            </div> -->
+            </div>
         </div>
         <div id="map"></div>
         <div id="profileContainer"></div>
@@ -45,13 +45,6 @@
         <div id="modal-content">
             <img id="modal-image" src="" alt="Photo">
             <div id="modal-caption"></div>
-        </div>
-    </div>
-    <div class="stage-button-container" id="stageButtons"></div>
-    <div style="position: absolute; bottom: 65px; left: 50%; transform: translateX(-50%); z-index: 1001; background: rgba(255,255,255,0.9); padding: 6px 12px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-        <div class="legend-box-items">
-            <div class="legend-item-icon">🚴‍♂️ <span>Current Position</span></div>
-            <div class="legend-item-icon">📷 <span>Photo</span></div>
         </div>
     </div>
 
@@ -123,23 +116,51 @@
             console.log("Profile container contents:", document.getElementById('profileContainer').innerHTML);
         };
 
-        // Create a foldable legend => replaced
-
-            const stageButtonsContainer = document.getElementById('stageButtons');
-            const dropdown = document.getElementById('stage-dropdown');
-            dropdown.style.display = 'none'; // hide dropdown visually
-            stageColors.forEach((color, index) => {
-                const button = document.createElement('div');
-                button.className = 'stage-button';
-                button.style.backgroundColor = color;
-                button.title = `Stage ${index + 1}`;
-                button.addEventListener('click', () => {
-                dropdown.value = index;
-                handleStageChange();
-                });
-                stageButtonsContainer.appendChild(button);
+        // Create a foldable legend
+        const legend = L.control({position: 'bottomright'});
+        legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <div class="legend-header">
+                    <h4>Legend</h4>
+                    <span class="legend-toggle">▼</span>
+                </div>
+                <div class="legend-content">
+                    ${Array.from({length: 11}, (_, i) => `
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: ${stageColors[i]};"></div>
+                            <span>Stage ${i+1}</span>
+                        </div>
+                    `).join('')}
+                    <div class="legend-item">
+                        <span style="margin-right: 8px;">🚴‍♂️</span>
+                        <span>Current Position</span>
+                    </div>
+                    <div class="legend-item">
+                        <span style="margin-right: 8px;">📷</span>
+                        <span>Photo</span>
+                    </div>
+                </div>
+            `;
+            
+            // Add click event to toggle legend
+            const toggle = div.querySelector('.legend-toggle');
+            const content = div.querySelector('.legend-content');
+            
+            toggle.addEventListener('click', function() {
+                if (content.style.display === 'none') {
+                    content.style.display = 'block';
+                    toggle.textContent = '▼';
+                } else {
+                    content.style.display = 'none';
+                    toggle.textContent = '▶';
+                }
             });
-
+            
+            return div;
+        };
+        legend.addTo(map);
+        
         // Create a marker for current position (initially hidden)
         const cyclistIcon = L.divIcon({
             html: '🚴‍♂️',
@@ -1146,7 +1167,7 @@ async function getCurrentWeather() {
             console.log("Current routes object:", routes);
             console.log("Registered Strava IDs:", routes.stravaIds);
         }
-        
+
 
 // Modify initialization to wait for Chart.js
 async function initApp() {
@@ -1318,3 +1339,4 @@ async function initApp() {
     </script>
 </body>
 </html>
+
