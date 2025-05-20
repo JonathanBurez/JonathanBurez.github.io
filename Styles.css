@@ -307,9 +307,16 @@ body {
     background-color: #f0f0f0;
   }
   
-/* For "Whole Trip" */
-.stage-dropdown option[value="-1"]::before { content: "🌍 "; }
-
+  .custom-dropdown .dropdown-options div[data-value="-1"]::before {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-image: url("Photos/Hope1000.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 8px;
+}
 .stage-dropdown:hover {
     background-color: #1d3557;
 }
