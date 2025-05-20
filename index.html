@@ -117,49 +117,49 @@
         };
 
         // Create a foldable legend
-        const legend = L.control({position: 'bottomright'});
-        legend.onAdd = function (map) {
-            const div = L.DomUtil.create('div', 'legend');
-            div.innerHTML = `
-                <div class="legend-header">
-                    <h4>Legend</h4>
-                    <span class="legend-toggle">▼</span>
-                </div>
-                <div class="legend-content">
-                    ${Array.from({length: 11}, (_, i) => `
-                        <div class="legend-item">
-                            <div class="legend-color" style="background-color: ${stageColors[i]};"></div>
-                            <span>Stage ${i+1}</span>
-                        </div>
-                    `).join('')}
-                    <div class="legend-item">
-                        <span style="margin-right: 8px;">🚴‍♂️</span>
-                        <span>Current Position</span>
-                    </div>
-                    <div class="legend-item">
-                        <span style="margin-right: 8px;">📷</span>
-                        <span>Photo</span>
-                    </div>
-                </div>
-            `;
+        // const legend = L.control({position: 'bottomright'});
+        // legend.onAdd = function (map) {
+        //     const div = L.DomUtil.create('div', 'legend');
+        //     div.innerHTML = `
+        //         <div class="legend-header">
+        //             <h4>Legend</h4>
+        //             <span class="legend-toggle">▼</span>
+        //         </div>
+        //         <div class="legend-content">
+        //             ${Array.from({length: 11}, (_, i) => `
+        //                 <div class="legend-item">
+        //                     <div class="legend-color" style="background-color: ${stageColors[i]};"></div>
+        //                     <span>Stage ${i+1}</span>
+        //                 </div>
+        //             `).join('')}
+        //             <div class="legend-item">
+        //                 <span style="margin-right: 8px;">🚴‍♂️</span>
+        //                 <span>Current Position</span>
+        //             </div>
+        //             <div class="legend-item">
+        //                 <span style="margin-right: 8px;">📷</span>
+        //                 <span>Photo</span>
+        //             </div>
+        //         </div>
+        //     `;
             
-            // Add click event to toggle legend
-            const toggle = div.querySelector('.legend-toggle');
-            const content = div.querySelector('.legend-content');
+        //     // Add click event to toggle legend
+        //     const toggle = div.querySelector('.legend-toggle');
+        //     const content = div.querySelector('.legend-content');
             
-            toggle.addEventListener('click', function() {
-                if (content.style.display === 'none') {
-                    content.style.display = 'block';
-                    toggle.textContent = '▼';
-                } else {
-                    content.style.display = 'none';
-                    toggle.textContent = '▶';
-                }
-            });
+        //     toggle.addEventListener('click', function() {
+        //         if (content.style.display === 'none') {
+        //             content.style.display = 'block';
+        //             toggle.textContent = '▼';
+        //         } else {
+        //             content.style.display = 'none';
+        //             toggle.textContent = '▶';
+        //         }
+        //     });
             
-            return div;
-        };
-        legend.addTo(map);
+        //     return div;
+        // };
+        // legend.addTo(map);
         
         // Create a marker for current position (initially hidden)
         const cyclistIcon = L.divIcon({
@@ -186,12 +186,11 @@
         }
 
         // Example usage - collapse info panel by default on mobile
-        function initializeResponsiveElements() {
-            if (isMobileDevice()) {
-                document.getElementById('info-panel').classList.add('info-panel-collapsed');
-                document.getElementById('legend').classList.add('legend-collapsed');
-            }
-        }
+        // function initializeResponsiveElements() {
+        //     if (isMobileDevice()) {
+        //         document.getElementById('info-panel').classList.add('info-panel-collapsed');
+        //     }
+        // }
 
         // Function to parse GPX files
         async function parseGPX(url, stageIndex) {
@@ -447,7 +446,7 @@ function createCombinedElevationProfile() {
                         text: 'Distance (km)'
                     },
                 min: 0,         // 👈 Hard-coded minimum x-axis value
-                max: 1010       // 👈 Hard-coded maximum x-axis value
+                max: 1009.2       // 👈 Hard-coded maximum x-axis value
                 },
                 y: {
                     title: {

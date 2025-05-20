@@ -246,17 +246,37 @@ body {
 }
 
 .stage-dropdown {
-    background-color: #457b9d;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
+    font-family: sans-serif; /* same as your legend font */
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    appearance: none;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    min-width: 150px;
-    transition: all 0.2s;
 }
+
+.stage-dropdown option {
+    padding: 6px 10px;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* Colored bar next to option text — uses emojis to simulate colored lines */
+.stage-dropdown option[value="0"]::before { content: "🟥 "; }
+.stage-dropdown option[value="1"]::before { content: "🟦 "; }
+.stage-dropdown option[value="2"]::before { content: "🟩 "; }
+.stage-dropdown option[value="3"]::before { content: "🟪 "; }
+.stage-dropdown option[value="4"]::before { content: "🟧 "; }
+.stage-dropdown option[value="5"]::before { content: "🟨 "; }
+.stage-dropdown option[value="6"]::before { content: "🟫 "; }
+.stage-dropdown option[value="7"]::before { content: "💖 "; }
+.stage-dropdown option[value="8"]::before { content: "⬛ "; }
+.stage-dropdown option[value="9"]::before { content: "🟦 "; }
+.stage-dropdown option[value="10"]::before { content: "🟥 "; }
+
+/* For "Whole Trip" */
+.stage-dropdown option[value="-1"]::before { content: "🌍 "; }
 
 .stage-dropdown:hover {
     background-color: #1d3557;
