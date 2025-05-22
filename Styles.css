@@ -462,6 +462,7 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #1d3557;
+    order: 99;
 }
 
 #commento-container h3 {
@@ -574,7 +575,7 @@ body {
         width: 90px;
         height: 90px;
     }
-    
+
     /* Ensure touch targets are at least 44px */
     .info-panel-toggle, 
     .legend-toggle,
