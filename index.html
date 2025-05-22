@@ -359,7 +359,7 @@ async function createCombinedElevationProfile() {
     profileContainer.innerHTML = '';
 
     try {
-        const response = await fetch('data/elevationData.json');
+        const response = await fetch('data/elevationDataNew.json');
         if (!response.ok) throw new Error('Failed to fetch elevation data');
 
         const datasets = await response.json();
