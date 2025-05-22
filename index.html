@@ -1047,19 +1047,22 @@ function createCombinedElevationProfile() {
         // Load GPX files - replace these URLs with your actual GPX files
         async function loadGPXFiles() {
             
-            // Load stages
-            parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day01.gpx', 0);
-            //parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/TestHerre.gpx', 0);
-            parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day02.gpx', 1);
-            parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day03.gpx', 2);
-            parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day04.gpx', 3);
-            parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day05.gpx', 4);
-            parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day06.gpx', 5);
-            parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day07.gpx', 6);
-            parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day08.gpx', 7);
-            parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day09.gpx', 8);
-            parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day10.gpx', 9);
-            parseGPX('https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day11.gpx', 10);
+            const gpxUrls = [
+                { url: 'https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day01.gpx', index: 0 },
+                { url: 'https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day02.gpx', index: 1 },
+                { url: 'https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day03.gpx', index: 2 },
+                { url: 'https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day04.gpx', index: 3 },
+                { url: 'https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day05.gpx', index: 4 },
+                { url: 'https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day06.gpx', index: 5 },
+                { url: 'https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day07.gpx', index: 6 },
+                { url: 'https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day08.gpx', index: 7 },
+                { url: 'https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day09.gpx', index: 8 },
+                { url: 'https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day10.gpx', index: 9 },
+                { url: 'https://raw.githubusercontent.com/JonathanBurez/JonathanBurez.github.io/refs/heads/main/Day11.gpx', index: 10 },
+            ];
+
+            // Load all GPX files in parallel
+            await Promise.all(gpxUrls.map(({ url, index }) => parseGPX(url, index)));
             
             // Initialize with whole trip view
             setTimeout(showWholeTrip, 1000);
