@@ -452,6 +452,42 @@ body {
     overflow: hidden;
     margin-bottom: 15px;
 }
+/* Commento container styling */
+#commento-container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 800px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #1d3557;
+}
+
+#commento-container h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #e63946;
+}
+
+/* Optional: tweak Commento internals via shadow DOM */
+.commento-root {
+    --commento-font: 'Segoe UI', sans-serif;
+    --commento-font-size: 14px;
+    --commento-color: #333;
+    --commento-border-color: #ccc;
+    --commento-bg-color: #fff;
+    --commento-accent-color: #e63946;
+    --commento-input-bg: #f8f9fa;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+    #commento-container {
+        padding: 15px;
+        margin: 10px;
+    }
+}
 
 /* Tablet styles */
 @media screen and (max-width: 1024px) {
