@@ -41,7 +41,7 @@ body {
 
 /* Info panel */
 #info-panel {
-    position: absolute;
+    position: relative;
     top: 10px;
     left: 10px;
     width: 250px;
@@ -534,6 +534,9 @@ body {
         border-radius: 0;
         box-shadow: none;
     }
+    #commento-container {
+        order: 5;
+      }
     
     .info-panel-header {
         padding: 10px;
