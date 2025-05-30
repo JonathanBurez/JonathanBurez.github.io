@@ -1319,131 +1319,93 @@ async function getCurrentWeather() {
             });
         }
 
-// Modify initialization to wait for Chart.js
-async function initApp() {
-    // Check for clear parameter in URL
-    // https://jonathanburez.github.io/index.html?clear=true
+        async function initApp() {
+    // Clear localStorage if "clear=true" is in the URL
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('clear') && urlParams.get('clear') === 'true') {
         localStorage.removeItem('actualPath');
         console.log('Path data cleared via URL parameter');
-        // Remove the parameter from URL to prevent clearing on every reload
         window.history.replaceState({}, document.title, window.location.pathname);
     }
-    // Register Strava activities
+
     registerStravaActivities();
     checkStravaStatus();
-    
-    // First load Chart.js
     await loadChartJS();
-
-    // Load saved path from localStorage
     loadSavedPath();
-
-    // Then load GPX routes
     await loadGPXFiles();
 
-    // Add the info panel header and toggle functionality
+    // Prepare info-panel
     const infoPanel = document.getElementById('info-panel');
-    infoPanel.remove(); // Remove it from its current position
-    const infoPanelContent = infoPanel.innerHTML;
-    
-    // Wrap existing content in the panel content div
     infoPanel.innerHTML = `
         <div class="info-panel-header">
             <h3 class="info-panel-title">Trip Information</h3>
             <span class="info-panel-toggle">▼</span>
         </div>
         <div class="info-panel-content">
-                  <div id="trip-stats">
-                      <div class="stat-box">
-                          <div class="stat-value" id="current-stage">0/11</div>
-                          <div class="stat-label">Current Stage</div>
-                      </div>
-                      <div class="stat-box">
-                          <div class="stat-value" id="distance-traveled">0</div>
-                          <div class="stat-label">Kilometers</div>
-                      </div>
-                      <div class="stat-box">
-                          <div class="stat-value" id="elevation-gain">0</div>
-                          <div class="stat-label">Meters Climbed</div>
-                      </div>
-                      <div class="stat-box">
-                          <div class="stat-value" id="photos-shared">0</div>
-                          <div class="stat-label">Photos Shared</div>
-                      </div>
-                  </div>
-                  <div id="weather-widget">
-                    <div class="weather-content">
-                        <div class="weather-icon">
-                            <img src="Photos/Hope1000.png" alt="Weather">
-                        </div>
-                        <div class="weather-info">
-                            <div class="weather-temp">--°C</div>
-                            <div class="weather-desc">Loading weather...</div>
-                            <div class="weather-location">--</div>
-                        </div>
+            <div id="trip-stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="current-stage">0/11</div>
+                    <div class="stat-label">Current Stage</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="distance-traveled">0</div>
+                    <div class="stat-label">Kilometers</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="elevation-gain">0</div>
+                    <div class="stat-label">Meters Climbed</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="photos-shared">0</div>
+                    <div class="stat-label">Photos Shared</div>
+                </div>
+            </div>
+            <div id="weather-widget">
+                <div class="weather-content">
+                    <div class="weather-icon">
+                        <img src="Photos/Hope1000.png" alt="Weather">
+                    </div>
+                    <div class="weather-info">
+                        <div class="weather-temp">--°C</div>
+                        <div class="weather-desc">Loading weather...</div>
+                        <div class="weather-location">--</div>
                     </div>
                 </div>
-                  <h2>Latest Photos</h2>
-                  <div id="photo-gallery">
-                      <!-- Photos will be added here dynamically -->
-                  </div>
-                  <div id="last-update">Last updated: Not yet started</div>
+            </div>
+            <h2>Latest Photos</h2>
+            <div id="photo-gallery"></div>
+            <div id="last-update">Last updated: Not yet started</div>
         </div>
     `;
+
+    // Move infoPanel below profileContainer
     const profileContainer = document.getElementById('profileContainer');
     profileContainer.insertAdjacentElement('afterend', infoPanel);
-        
-    // Inside the initApp function, after setting the infoPanel.innerHTML, add this line:
-    // infoPanel.classList.add('info-panel-collapsed');
 
-    // And change the toggle text:
-    const toggle = document.querySelector('.info-panel-toggle');
-    toggle.textContent = '▲';
-    // Add event listener for toggle
-    document.querySelector('.info-panel-header').addEventListener('click', function() {
-        const panel = document.getElementById('info-panel');
-        panel.classList.toggle('info-panel-collapsed');
-        
+    // Enable toggle collapse
+    document.querySelector('.info-panel-header').addEventListener('click', function () {
+        infoPanel.classList.toggle('info-panel-collapsed');
         const toggle = document.querySelector('.info-panel-toggle');
-        if (panel.classList.contains('info-panel-collapsed')) {
-            toggle.textContent = '▲';
-        } else {
-            toggle.textContent = '▼';
-        }
+        toggle.textContent = infoPanel.classList.contains('info-panel-collapsed') ? '▲' : '▼';
     });
 
-    // Add this to your initApp function
-    function optimizeForTouch() {
-        if ('ontouchstart' in window) {
-            // Increase popup size for touch devices
-            map.options.tapTolerance = 30;
-            
-            // Increase marker size for easier tapping
-            const markerElements = document.querySelectorAll('.leaflet-marker-icon');
-            markerElements.forEach(marker => {
-                marker.style.width = '30px';
-                marker.style.height = '30px';
-            });
-        }
-    }
-
-    addTestPhoto();
-    // Add this at the end of the initApp function:
+    // Weather
     getCurrentWeather();
-    // Update weather every 30 minutes
     setInterval(getCurrentWeather, 30 * 60 * 1000);
-    // Initial fetch
+
+    // Track position
     fetchSpotData();
+    setInterval(fetchSpotData, 5 * 60 * 1000);
 
-    // Then fetch every 5 minutes (adjust timing as needed)
-    const updateInterval = 5 * 60 * 1000; // 5 minutes in milliseconds
-    setInterval(fetchSpotData, updateInterval);
+    // Demo photo
+    addTestPhoto();
 
-    console.log(`Position updates scheduled every ${updateInterval/60000} minutes`);
+    // Stage selector setup (important to keep dropdown working)
     setupStageDropdown();
+
+    console.log(`Position updates scheduled every 5 minutes`);
 }
+
 
         
         // Start the application
