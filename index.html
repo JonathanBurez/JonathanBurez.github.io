@@ -39,6 +39,7 @@
             </div>                  
         <div id="map"></div>
         <div id="profileContainer"></div>
+        <div id="info-panel" class="info-panel">  </div>
     </div>
 
     <div id="photo-modal">
@@ -58,17 +59,28 @@
     <script>
       // Modify Chart.js loading
       function loadChartJS() {
-          return new Promise((resolve, reject) => {
-              const chartScript = document.createElement('script');
-              chartScript.src = "https://cdn.jsdelivr.net/npm/chart.js";
-              chartScript.onload = () => {
-                  console.log('Chart.js loaded successfully');
-                  resolve();
-              };
-              chartScript.onerror = reject;
-              document.head.appendChild(chartScript);
-          });
-      }
+    return new Promise((resolve, reject) => {
+        // Check if Chart.js is already loaded
+        if (typeof Chart !== 'undefined') {
+            console.log('Chart.js already loaded');
+            resolve();
+            return;
+        }
+
+        const chartScript = document.createElement('script');
+        chartScript.src = "https://cdn.jsdelivr.net/npm/chart.js";
+        chartScript.onload = () => {
+            console.log('Chart.js loaded successfully');
+            // Add a small delay to ensure Chart.js is fully initialized
+            setTimeout(resolve, 100);
+        };
+        chartScript.onerror = (error) => {
+            console.error('Failed to load Chart.js:', error);
+            reject(error);
+        };
+        document.head.appendChild(chartScript);
+    });
+}
       // Initialize the (Leaflet) map centered on Switzerland
       const map = L.map('map').setView([46.8182, 8.2275], 8);
       // Maptiler API key
@@ -372,89 +384,106 @@ async function createCombinedElevationProfile() {
 
 function renderElevationChart(datasets) {
     const profileContainer = document.getElementById('profileContainer');
+    if (!profileContainer) {
+        console.error('Profile container not found');
+        return;
+    }
+    
     profileContainer.innerHTML = '';
 
     const canvas = document.createElement('canvas');
     canvas.id = 'elevationChart';
+    canvas.style.height = '400px'; // Set explicit height
     profileContainer.appendChild(canvas);
 
     const ctx = canvas.getContext('2d');
 
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: { datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    type: 'linear',
-                    title: { display: true, text: 'Distance (km)' },
-                    min: 0,
-                    max: 1009.2
+    // Check if Chart.js is available
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded');
+        profileContainer.innerHTML = '<div class="loading-message">Chart.js failed to load</div>';
+        return;
+    }
+
+    try {
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: { datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        title: { display: true, text: 'Distance (km)' },
+                        min: 0,
+                        max: 1009.2
+                    },
+                    y: {
+                        title: { display: true, text: 'Elevation (m)' }
+                    }
                 },
-                y: {
-                    title: { display: true, text: 'Elevation (m)' }
-                }
-            },
-            plugins: {
-                legend: { display: false },
-                title: { display: true, text: 'Elevation Profile - Complete Trip' },
-                tooltip: {
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Elevation Profile - Complete Trip' },
+                    tooltip: {
+                        mode: 'nearest',
+                        intersect: false,
+                        callbacks: {
+                            title: context => `${context[0].dataset.label} - ${context[0].raw.x.toFixed(1)} km`,
+                            label: context => `Elevation: ${context[0].raw.y.toFixed(0)} m`
+                        }
+                    }
+                },
+                interaction: {
                     mode: 'nearest',
-                    intersect: false,
-                    callbacks: {
-                        title: context => `${context[0].dataset.label} - ${context[0].raw.x.toFixed(1)} km`,
-                        label: context => `Elevation: ${context.raw.y.toFixed(0)} m`
+                    intersect: false
+                },
+                elements: {
+                    line: {
+                        tension: 0.2
                     }
                 }
-            },
-            interaction: {
-                mode: 'nearest',
-                intersect: false
-            },
-            elements: {
-                line: {
-                    tension: 0.2
+            }
+        });
+
+        // Add hover marker functionality
+        const hoverMarker = L.circleMarker([0, 0], {
+            radius: 8,
+            color: '#ff0000',
+            fillColor: '#ff0000',
+            fillOpacity: 0.5,
+            weight: 2
+        });
+        
+        canvas.addEventListener('mousemove', function(evt) {
+            const points = chart.getElementsAtEventForMode(evt, 'nearest', { intersect: false });
+            
+            if (points.length > 0) {
+                const datasetIndex = points[0].datasetIndex;
+                const index = points[0].index;
+                const pointData = chart.data.datasets[datasetIndex].data[index];
+                
+                if (pointData && pointData.lat && pointData.lon) {
+                    hoverMarker.setLatLng([pointData.lat, pointData.lon]);
+                    
+                    if (!map.hasLayer(hoverMarker)) {
+                        hoverMarker.addTo(map);
+                    }
                 }
             }
-        }
-    });
-
-    // Add hover marker logic here if you want
-        // Add hover functionality to show position on map
-        const hoverMarker = L.circleMarker([0, 0], {
-        radius: 8,
-        color: '#ff0000',
-        fillColor: '#ff0000',
-        fillOpacity: 0.5,
-        weight: 2
-    });
-    
-    canvas.addEventListener('mousemove', function(evt) {
-        const points = chart.getElementsAtEventForMode(evt, 'nearest', { intersect: false });
+        });
         
-        if (points.length > 0) {
-            const datasetIndex = points[0].datasetIndex;
-            const index = points[0].index;
-            const pointData = chart.data.datasets[datasetIndex].data[index];
-            
-            // Update marker position
-            hoverMarker.setLatLng([pointData.lat, pointData.lon]);
-            
-            // Add marker to map if not already added
-            if (!map.hasLayer(hoverMarker)) {
-                hoverMarker.addTo(map);
+        canvas.addEventListener('mouseout', function() {
+            if (map.hasLayer(hoverMarker)) {
+                map.removeLayer(hoverMarker);
             }
-        }
-    });
-    
-    // Remove marker when mouse leaves the chart
-    canvas.addEventListener('mouseout', function() {
-        if (map.hasLayer(hoverMarker)) {
-            map.removeLayer(hoverMarker);
-        }
-    });
+        });
+        
+    } catch (error) {
+        console.error('Error creating chart:', error);
+        profileContainer.innerHTML = '<div class="loading-message">Failed to create elevation chart</div>';
+    }
 }
 
 
@@ -1145,7 +1174,67 @@ function extractMetadataFromUrl(url) {
         caption: `Photo taken on ${new Date(timestamp).toLocaleDateString()} at ${new Date(timestamp).toLocaleTimeString()}`
     };
 }
+function setupInfoPanel() {
+    const infoPanel = document.getElementById('info-panel');
+    if (!infoPanel) {
+        console.error('Info panel not found in HTML');
+        return;
+    }
+    
+    infoPanel.innerHTML = `
+        <div class="info-panel-header">
+            <h3 class="info-panel-title">Trip Information</h3>
+            <span class="info-panel-toggle">▼</span>
+        </div>
+        <div class="info-panel-content">
+            <div id="trip-stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="current-stage">0/11</div>
+                    <div class="stat-label">Current Stage</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="distance-traveled">0</div>
+                    <div class="stat-label">Kilometers</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="elevation-gain">0</div>
+                    <div class="stat-label">Meters Climbed</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="photos-shared">0</div>
+                    <div class="stat-label">Photos Shared</div>
+                </div>
+            </div>
+            <div id="weather-widget">
+                <div class="weather-content">
+                    <div class="weather-icon">
+                        <img src="Photos/Hope1000.png" alt="Weather">
+                    </div>
+                    <div class="weather-info">
+                        <div class="weather-temp">--°C</div>
+                        <div class="weather-desc">Loading weather...</div>
+                        <div class="weather-location">--</div>
+                    </div>
+                </div>
+            </div>
+            <h2>Latest Photos</h2>
+            <div id="photo-gallery"></div>
+            <div id="last-update">Last updated: Not yet started</div>
+        </div>
+    `;
 
+    // Enable toggle collapse
+    const headerElement = infoPanel.querySelector('.info-panel-header');
+    if (headerElement) {
+        headerElement.addEventListener('click', function () {
+            infoPanel.classList.toggle('info-panel-collapsed');
+            const toggle = infoPanel.querySelector('.info-panel-toggle');
+            if (toggle) {
+                toggle.textContent = infoPanel.classList.contains('info-panel-collapsed') ? '▲' : '▼';
+            }
+        });
+    }
+}
 // Add this function to fetch weather data
 async function fetchWeather(lat, lon) {
     try {
@@ -1327,7 +1416,7 @@ async function getCurrentWeather() {
     });
 }
 
-        async function initApp() {
+async function initApp() {
     // Clear localStorage if "clear=true" is in the URL
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('clear') && urlParams.get('clear') === 'true') {
@@ -1338,64 +1427,18 @@ async function getCurrentWeather() {
 
     registerStravaActivities();
     checkStravaStatus();
+    
+    // Wait for Chart.js to load before proceeding
     await loadChartJS();
+    
     loadSavedPath();
     await loadGPXFiles();
 
-    // Prepare info-panel
-    const infoPanel = document.getElementById('info-panel');
-    infoPanel.innerHTML = `
-        <div class="info-panel-header">
-            <h3 class="info-panel-title">Trip Information</h3>
-            <span class="info-panel-toggle">▼</span>
-        </div>
-        <div class="info-panel-content">
-            <div id="trip-stats">
-                <div class="stat-box">
-                    <div class="stat-value" id="current-stage">0/11</div>
-                    <div class="stat-label">Current Stage</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="distance-traveled">0</div>
-                    <div class="stat-label">Kilometers</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="elevation-gain">0</div>
-                    <div class="stat-label">Meters Climbed</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="photos-shared">0</div>
-                    <div class="stat-label">Photos Shared</div>
-                </div>
-            </div>
-            <div id="weather-widget">
-                <div class="weather-content">
-                    <div class="weather-icon">
-                        <img src="Photos/Hope1000.png" alt="Weather">
-                    </div>
-                    <div class="weather-info">
-                        <div class="weather-temp">--°C</div>
-                        <div class="weather-desc">Loading weather...</div>
-                        <div class="weather-location">--</div>
-                    </div>
-                </div>
-            </div>
-            <h2>Latest Photos</h2>
-            <div id="photo-gallery"></div>
-            <div id="last-update">Last updated: Not yet started</div>
-        </div>
-    `;
-
-    // Move infoPanel below profileContainer
-    const profileContainer = document.getElementById('profileContainer');
-    profileContainer.insertAdjacentElement('afterend', infoPanel);
-
-    // Enable toggle collapse
-    document.querySelector('.info-panel-header').addEventListener('click', function () {
-        infoPanel.classList.toggle('info-panel-collapsed');
-        const toggle = document.querySelector('.info-panel-toggle');
-        toggle.textContent = infoPanel.classList.contains('info-panel-collapsed') ? '▲' : '▼';
-    });
+    // Setup info panel first (before stage dropdown)
+    setupInfoPanel();
+    
+    // Stage selector setup (important to keep dropdown working)
+    setupStageDropdown();
 
     // Weather
     getCurrentWeather();
@@ -1408,10 +1451,7 @@ async function getCurrentWeather() {
     // Demo photo
     addTestPhoto();
 
-    // Stage selector setup (important to keep dropdown working)
-    setupStageDropdown();
-
-    console.log(`Position updates scheduled every 5 minutes`);
+    console.log(`Application initialized successfully`);
 }
 
 
