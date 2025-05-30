@@ -40,7 +40,6 @@
         </div>
         <div id="map"></div>
         <div id="profileContainer"></div>
-        <div id="info-panel">
         </div>
 
     <div id="photo-modal">
@@ -1393,8 +1392,9 @@ async function initApp() {
                   <div id="last-update">Last updated: Not yet started</div>
         </div>
     `;
-    document.getElementById('container').appendChild(infoPanel);
-    
+    const profileContainer = document.getElementById('profileContainer');
+    profileContainer.insertAdjacentElement('afterend', infoPanel);
+        
     // Inside the initApp function, after setting the infoPanel.innerHTML, add this line:
     // infoPanel.classList.add('info-panel-collapsed');
 

@@ -41,19 +41,9 @@ body {
 
 /* Info panel */
 #info-panel {
-    position: relative;
-    top: 10px;
-    left: 10px;
-    width: 250px;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 5px;
-    border-radius: 8px;
-    z-index: auto;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: transform 0.3s ease;
-    font-size: 14px;
-    max-height: 80vh;
-    overflow-y: auto;
+    margin: 15px auto;
+    max-width: 900px;
+    width: 100%;
 }
 
 .info-panel-header {
@@ -527,7 +517,6 @@ body {
     }
     
     #info-panel {
-        order: 4;
         position: static;
         width: auto;
         margin: 0;
