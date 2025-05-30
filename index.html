@@ -1284,39 +1284,48 @@ async function getCurrentWeather() {
         }
 
         function setupStageDropdown() {
-            const selected = document.querySelector('.custom-dropdown .selected');
-            const options = document.querySelectorAll('.custom-dropdown .dropdown-options div');
+    const dropdown = document.querySelector('.custom-dropdown');
+    const selected = dropdown.querySelector('.selected');
+    const options = dropdown.querySelectorAll('.dropdown-options div');
+    
+    if (!selected || options.length === 0) {
+        console.warn("Stage dropdown elements not found.");
+        return;
+    }
 
-            if (!selected || options.length === 0) {
-                console.warn("Stage dropdown elements not found.");
-                return;
-            }
-
-            selected.addEventListener('click', function () {
-                this.nextElementSibling.classList.toggle('show');
-            });
-
-            options.forEach(option => {
-                option.addEventListener('click', function () {
-                    const selectedDiv = this.parentElement.previousElementSibling;
-                    selectedDiv.textContent = this.textContent;
-                    // selectedDiv.classList.toggle('hope-icon', value === -1);
-
-                    // Get the color from --color or use a fallback
-                    const color = this.style.getPropertyValue('--color') || '#000';
-
-                    // Apply vertical line to the selected item
-                    selectedDiv.style.borderLeft = `6px solid ${color}`;
-                    selectedDiv.style.paddingLeft = '8px';
-
-                    this.parentElement.classList.remove('show');
-
-                    const value = parseInt(this.getAttribute('data-value'));
-                    document.getElementById('stage-dropdown').setAttribute('data-value', value);
-                    handleStageChange(value);
-                });
-            });
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!dropdown.contains(e.target)) {
+            dropdown.querySelector('.dropdown-options').classList.remove('show');
         }
+    });
+
+    selected.addEventListener('click', function(e) {
+        e.stopPropagation();
+        this.nextElementSibling.classList.toggle('show');
+    });
+
+    options.forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const selectedDiv = this.parentElement.previousElementSibling;
+            selectedDiv.textContent = this.textContent;
+            
+            // Get the color from --color or use a fallback
+            const color = this.style.getPropertyValue('--color') || '#000';
+            
+            // Apply vertical line to the selected item
+            selectedDiv.style.borderLeft = `6px solid ${color}`;
+            selectedDiv.style.paddingLeft = '8px';
+            
+            this.parentElement.classList.remove('show');
+            
+            const value = parseInt(this.getAttribute('data-value'));
+            dropdown.setAttribute('data-value', value);
+            handleStageChange(value);
+        });
+    });
+}
 
         async function initApp() {
     // Clear localStorage if "clear=true" is in the URL
