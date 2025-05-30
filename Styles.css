@@ -517,11 +517,14 @@ body {
     }
     
     #info-panel {
-        position: static;
-        width: auto;
-        margin: 0;
-        border-radius: 0;
-        box-shadow: none;
+        /* Remove positioning */
+        position: static;   /* or simply delete the 'position' line entirely */
+        top: auto;
+        left: auto;
+    
+        margin: 15px auto;
+        max-width: 900px;
+        width: 100%;
     }
     #commento-container {
         order: 5;
